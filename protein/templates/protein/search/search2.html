@@ -1,0 +1,125 @@
+{% extends 'protein/base.html' %}
+{% block title %} Search {% endblock %}
+{% block search_active %} active {% endblock %}
+{% block container %} container-fluid {% endblock %}
+
+{% block body %}
+<div  id="app">
+
+    <template >
+
+    <div>
+        <el-table :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%">
+            <el-table-column prop="accession" label="日期" width="180">
+            </el-table-column>
+            <el-table-column prop="gene_name" label="姓名" width="180">
+            </el-table-column>
+            <el-table-column prop="entry_name" label="entry_name">
+            </el-table-column>
+        </el-table>
+        <div class="pagination">
+            <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="currentPage"
+                :page-sizes="[5, 10, 20, 40]"
+                :page-size="pagesize"
+                layout="total, sizes,prev, pager, next"
+                :total="tableData.length"
+                prev-text="上一页"
+                next-text="下一页">
+            </el-pagination>
+        </div>
+    </div>
+</template>
+
+    </div>
+<script>
+
+   var app= new Vue( {
+        el: "#app",
+        data() {
+            return {
+                currentPage: 1, //默认显示页面为1
+                pagesize: 5, //    每页的数据条数
+                tableData: [], //需要data定义一些，tableData定义一个空数组，请求的数据都是存放这里面
+            }
+        },
+        mounted() {
+            this.getData();
+        },
+        methods: {
+            getData() {
+                that =this
+                axios({
+                        method: 'get',
+                        url: "{% url 'protein:search' %}",
+                        params: {
+                            'gene': "P53",
+                            'gene_type': "gene_name"
+                        }
+                    }).then(function (response) {
+
+
+                        that.tableData = response.data.data
+                        console.log(response.data.data)
+
+
+                    }, function (err) {
+
+                    });
+
+
+            },
+            //每页下拉显示数据
+            handleSizeChange: function(size) {
+                this.pagesize = size;
+                /*console.log(this.pagesize) */
+            },
+            //点击第几页
+            handleCurrentChange: function(currentPage) {
+                this.currentPage = currentPage;
+                /*console.log(this.currentPage) */
+            },
+
+        }
+    })
+</script>
+<div id="test2">
+    <template >
+    <div style="height:200px;">
+        <div style="margin-left: 5px;margin-top:2px;margin-right:5px;line-height:29px;"  v-html="result_text_show"></div>
+    </div>
+</template>
+</div>
+<script>
+    var app2= new Vue({
+        el: '#test2',
+        name: "demo",
+        data(){
+            return{
+                result_text_show:'',
+            }
+        },
+        created:function(){
+            this.getStringColorReplace();
+        },
+        methods:{
+            getStringColorReplace:function() {
+                //假设使用固定的文本，可后台接收
+                var show_text = '学校查获禁止垃圾食品，并进行了检查。';
+                var replace_text= ["学校","检查"]
+                var color_dict = {"学校":"rgb(76,142,218)","垃圾食品":"rgb(255,224,129)","检查":"rgb(247,151,103)"}
+                for(var i=0;i<replace_text.length;i++){
+                    var color_temp = color_dict[replace_text[i]];
+                    var replaceString = '<span style="color: ' + color_temp + ';">' + replace_text[i] + "</span>";
+                    show_text = show_text.replace(RegExp(replace_text[i],'g') ,replaceString);
+                }
+                this.result_text_show = show_text;
+            },
+        }
+    });
+</script>
+————————————————
+
+{% endblock %}

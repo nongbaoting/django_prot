@@ -1,0 +1,180 @@
+{% extends 'protein/base.html' %}
+{% block title %} Search {% endblock %}
+{% block active_index %}search{% endblock %}
+
+
+{% block body %}
+    <div id="search_id_1" style="padding-top: 80px">
+        <el-row>
+            <el-col :span="12" :offset="6">
+
+                <div style="padding-bottom: 5px; padding-left: 5px;">
+                    Example: <a href="#" @click="exmapleGene('P450')">P450</a>
+                    <a href="#" @click="exmapleGene('P53')">P53 </a>
+                </div>
+
+
+                <el-input placeholder="请输入内容" v-model="input_word" class="input-with-select" @keyup.enter.native="searchInfo" style="text-transform:uppercase;">
+                    <el-select v-model="select" slot="prepend" placeholder="请选择">
+                        <el-option label="Gene Symbol" value="gene_name"></el-option>
+                        <el-option label="Uniprot Accession" value="2"></el-option>
+                    </el-select>
+                    <el-button slot="append" icon="el-icon-search" @click="searchInfo"></el-button>
+                </el-input>
+
+
+                <template v-if="tableData.length>0">
+
+
+                    <div style="padding-top: 20px">
+                        <el-table
+                                :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
+                                style="width: 100%">
+                            <el-table-column prop="gene_name" label="Gene Symbol" sortable width="180">
+                            </el-table-column>/
+
+                            <el-table-column label="Gene Symbol" sortable width="180">
+                                <template slot-scope="scope">
+                                    <span v-html="getStringColorReplace(scope.row.gene_name)">{[  getStringColorReplace(scope.row.gene_name) ]} <span>
+
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column prop="entry_name" label="entry_name" sortable width="180">
+                            </el-table-column>
+
+                            <el-table-column sortable prop="accession" label="accession" width="180">
+                            </el-table-column>
+
+                            <el-table-column prop="alphafold" label="alphafold" width="180">
+                                <template slot-scope="scope">
+                                    <a :href="'{% url 'protein:show_structure' %}?str_id=' + scope.row.alphafold + '&gene_name=' + scope.row.gene_name"
+                                       v-if="scope.row.alphafold">AlphaFold 2</a>
+                                    <span v-else></span>
+                                </template>
+                            </el-table-column>
+
+
+                        </el-table>
+                        <div class="pagination">
+                            <el-pagination
+                                    @size-change="handleSizeChange"
+                                    @current-change="handleCurrentChange"
+                                    :current-page="currentPage"
+                                    :page-sizes="[ 5, 10, 20, 40]"
+                                    :page-size="pagesize"
+                                    layout="total, sizes,prev, pager, next"
+                                    :total="tableData.length"
+                                    prev-text="Prev"
+                                    next-text="Next">
+                            </el-pagination>
+                        </div>
+                    </div>
+                </template>
+
+            </el-col>
+        </el-row>
+    </div>
+
+    <style>
+        .el-select .el-input {
+            width: 130px;
+        }
+
+        .input-with-select .el-input-group__prepend {
+            background-color: #fff;
+        }
+    </style>
+
+    <script>
+        var Main_search_1 = {
+            delimiters: ['{[', ']}'],
+            data() {
+                return {
+                    input_word: '',
+                    select: 'gene_name',
+
+                    currentPage: 1, //默认显示页面为1
+                    pagesize: 10, //    每页的数据条数
+                    tableData: [], //需要data定义一些，tableData定义一个空数组，请求的数据都是存放这里面
+                }
+            },
+
+            methods: {
+                 colorSearchText(gene_name){
+                    gene_name = "<span style='color:red'>"+ gene_name + '</span>'
+                    return gene_name
+                },
+                getInput() {
+                    //console.log(this.select)
+                    //console.log(this.input_word)
+                },
+                exmapleGene(gene) {
+                    //console.log(gene)
+                    this.input_word = gene
+                    this.searchInfo()
+
+                },
+                searchInfo() {
+                    that = this
+                    that.tableData = []
+                    axios({
+                        method: 'get',
+                        url: "{% url 'protein:search' %}",
+                        params: {
+                            'gene': that.input_word,
+                            'gene_type': that.select
+                        }
+                    }).then(function (response) {
+
+                        var dat = response.data.data
+                        /*
+                        for(let i=0; i<dat.length; ++i){
+                            console.log(dat[i].gene_name)
+                            dat[i].gene_name = that.getStringColorReplace(dat[i].gene_name)
+                        }
+                        */
+                        that.tableData = response.data.data
+                        // console.log(response.data.data)
+
+
+                    }, function (err) {
+                        console.log(err)
+                    });
+
+
+                },
+                //每页下拉显示数据
+                handleSizeChange: function (size) {
+                    this.pagesize = size;
+                    /*console.log(this.pagesize) */
+                },
+                //点击第几页
+                handleCurrentChange: function (currentPage) {
+                    this.currentPage = currentPage;
+                    /*console.log(this.currentPage) */
+                },
+
+                getStringColorReplace: function (show_text) {
+                    //假设使用固定的文本，可后台接收
+                    // var show_text = '学校查获禁止垃圾食品，并进行了检查。';
+                    var replace_text = [this.input_word]
+                    var color_dict = {
+                        'gene_name': "rgb(76,142,218)",
+                        "垃圾食品": "rgb(255,224,129)",
+                        "检查": "rgb(247,151,103)"
+                    }
+                    for (var i = 0; i < replace_text.length; i++) {
+                        var color_temp = color_dict[replace_text[i]];
+                        var replaceString = '<span style="color: red">' + replace_text[i] + "</span>";
+                        show_text = show_text.replace(RegExp(replace_text[i], 'g'), replaceString);
+                    }
+                    return show_text;
+                },
+            }
+        }
+        var Ctor = Vue.extend(Main_search_1)
+        new Ctor().$mount('#search_id_1')
+    </script>
+
+{% endblock %}

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+          -->
+
+    <!-- Option 2: Separate Popper and Bootstrap JS
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+            integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+            crossorigin="anonymous"></script>
+            -->
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+    <!-- 引入样式 element-ui -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+    <title>Protein:{% block title %}Protein{% endblock %}</title>
+</head>
+<body>
+
+<div  id="nav_top">
+    <div class="line"></div>
+<el-menu
+    :default-active="activeIndex"
+  class="el-menu-demo"
+  mode="horizontal"
+  @select="handleSelect"
+  background-color="#545c64"
+  text-color="#fff"
+  active-text-color="#ffd04b">
+  <el-menu-item index="home" >
+      <a  href="{% url 'protein:index' %}">Home </a>
+  </el-menu-item>
+    <el-menu-item index="search">
+        <a href="{% url 'protein:search' %}">Search</a>
+    </el-menu-item>
+  <el-submenu index="predict">
+    <template slot="title">Workshop</template>
+    <el-menu-item index="predict-1">
+        <a href="{% url 'protein:alphafold2' %}">Predict</a>
+    </el-menu-item>
+    <el-menu-item index="predict-2">
+        <a  href="{% url 'protein:structure_result' %}">Result</a>
+    </el-menu-item>
+    <el-menu-item index="predict-3">disabled</el-menu-item>
+    <el-submenu index="predict-4">
+      <template slot="title" >disabled</template>
+      <el-menu-item index="predict-4-1" disabled >disabled</el-menu-item>
+      <el-menu-item index="predict-4-2" disabled >disabled</el-menu-item>
+      <el-menu-item index="predict-4-3" disabled >disabled</el-menu-item>
+    </el-submenu>
+  </el-submenu>
+  <el-menu-item index="3" disabled >Help</el-menu-item>
+  <el-menu-item index="4" disabled >About</el-menu-item>
+</el-menu>
+</div>
+
+
+<script>
+var  Main_nav={
+
+ data() {
+  return {
+    activeIndex: '{% block active_index %}home{% endblock %}',
+  };
+},
+
+methods: {
+  handleSelect(key, keyPath) {
+    console.log(key, keyPath);
+  }
+}
+}
+var Ctor = Vue.extend(Main_nav)
+new Ctor().$mount('#nav_top')
+</script>
+
+
+
+
+
+{% block body %}
+
+{% endblock %}
+
+
+
+
+</body>
+</html>
