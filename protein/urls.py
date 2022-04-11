@@ -30,8 +30,10 @@ urlpatterns = [
 
     # Structure similarity
     path("api/similarity/upload_pdb/", struc_similarity.upload_pdb), 
-     path("api/similarity/DUF_SPalign/", struc_similarity.DUF_SPalign), 
-    
+    path("api/similarity/DUF_SPalign/", struc_similarity.DUF_SPalign), 
+    path("api/similarity/results/", struc_similarity.results),
+    path("api/similarity/getOneItem/", struc_similarity.getOneItem),
+
     # sequnce similarity
     path("api/blast/psijackhmmer/", blast.psijackhmmer),
     path("api/blast/res/blast_jackhmmer/", blast.res_blast_jackhmmer),
@@ -44,7 +46,7 @@ urlpatterns = [
     path("api/cdd/search/get_all_protin_ids/", cdd.get_all_protin_id),
     path("api/cdd/search_save/", cdd_search.search_save), 
     path("api/cdd/retrieve_save/", cdd_search.retrieve_save), 
- path("api/cdd/filter_cdd_save/", cdd_search.filter_cdd_save), 
+    path("api/cdd/filter_cdd_save/", cdd_search.filter_cdd_save), 
     #phylogenectics
      path("api/phylo/run/", phylogenetic.run_phylo),
      path("api/phylo/get_fasta/", phylogenetic.get_fasta),

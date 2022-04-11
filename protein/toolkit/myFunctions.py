@@ -14,8 +14,14 @@ def pickle_dump2file(obj, filename):
     pickle.dump(list(obj), fo)
     fo.close()
 
+def pickle_load_file(filename):
+    f = open(filename, 'rb')
+    obj = pickle.load(f)
+    f.close()
+    return obj
+
 def numpy_save2file(obj, filename):
-    np.savez_compressed(filename, cdd=obj)
+    np.savez_compressed(filename, cdd =obj)
     
 
 
@@ -25,11 +31,11 @@ def create_submit_form(params, res):
     # params['proj_type'] = res.task_name
     SubmitInfoNew.objects.create(
         uuid = res.task_id,
-        proj_type =  params.get('proj_type',default=''),
-        email_addr = params.get("email", default=''),
-        job_name = params.get("job_name", default='default'),
+        proj_type =  params.get('proj_type',''),
+        email_addr = params.get("email", ''),
+        job_name = params.get("job_name",'default'),
         upload_date = datetime.datetime.now(),
-        tools= params.get('tools', default=''),
+        tools= params.get('tools', ''),
         params=params,
         task_status=  res.status
     )

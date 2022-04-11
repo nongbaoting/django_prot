@@ -1,10 +1,10 @@
-import os
+import os, pickle
 import re
 import zipfile
 import uuid,json
 from pydoc import describe
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse,FileResponse, Http404
 from collections import defaultdict
 from protein.toolkit import *
 from protein import tasks
@@ -28,8 +28,8 @@ biozernike = {
 }
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
-structure_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_comparison"
-
+struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_comparison"
+scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/test"
 ################ view ###############
 def DUF_SPalign(request):
     jsonFi = "/training/nong/web/data/res/struc_comparison/duf_q2_cov.6.json"
@@ -37,6 +37,45 @@ def DUF_SPalign(request):
         data_str = json.load(f)
         data = {"data":data_str}
         return JsonResponse(data)
+
+def results(request):
+    if request.method =="GET":
+        myuuid = request.GET.get('uuid')
+        resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
+        print(resFi)
+        res = myFunctions.pickle_load_file(resFi)
+        data = {'data':res}
+        return JsonResponse(data)
+
+def getOneItem(request):
+    if request.method =="GET":
+        myuuid = request.GET.get('uuid')
+        resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
+        dataType = request.GET.get("dataType")
+        print(dataType)
+        if dataType == 'input_pdb':
+            fileName = request.GET.get("fileName")
+            pdb_fi = os.path.join(struc_cpm_dir, myuuid, fileName)
+            if os.path.exists(pdb_fi):
+                print(pdb_fi)
+                fh = open(pdb_fi, 'rb')
+                return FileResponse(fh)
+            else:
+                raise Http404("File not exist!" + pdb_fi)
+        elif dataType == "db_pdb":
+            fileName = request.GET.get("fileName")
+            pdb_fi = os.path.join(scopeDomain_dir, fileName )
+            if os.path.exists(pdb_fi):
+                print(pdb_fi)
+                fh = open(pdb_fi, 'rb')
+                return FileResponse(fh)
+            else:
+                print("File not exist!" + pdb_fi)
+                raise Http404("File not exist!" + pdb_fi)
+
+
+
+
 def upload_pdb(request):
     reg_af = re.compile('AF-')
     if request.method == "POST":
@@ -46,7 +85,7 @@ def upload_pdb(request):
             return JsonResponse({'msg': 'No file upload'})
 
         tempDirName = "file_" + str(uuid.uuid4())
-        tempDir = os.path.join(structure_cpm_dir, 'tmp', tempDirName)
+        tempDir = os.path.join(struc_cpm_dir, 'tmp', tempDirName)
         os.system('mkdir -p ' + tempDir)
 
         for (k, v) in fileDict:
@@ -68,9 +107,13 @@ def upload_pdb(request):
                     # 解压
                     myzipfile.extractall(tempDir)
         
-        params = myFunctions.load_POST(request)
+        # params = myFunctions.load_POST(request)
+        params ={}
         params['dir_1'] = tempDir
+        print(tempDir)
         params['proj_type'] = "Structure Comparison"
+        params['struc_cpm_dir'] = struc_cpm_dir
+        params['outFi_name'] = "TMalgin.pickle"
         res = tasks.structure_comparison.apply_async(args = [params])
         myFunctions.create_submit_form(params, res)
         return JsonResponse({'msg':200})

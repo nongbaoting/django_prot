@@ -4,8 +4,6 @@ from celery import shared_task
 import subprocess
 from protein.toolkit import *
 
-
-
 @shared_task(bind=True, name="Phylogenetic Analysis",property=9)
 def run_phylo(self, params):
     myuuid = self.request.id
@@ -13,7 +11,6 @@ def run_phylo(self, params):
     params['uuid'] = myuuid
     status = run_phylogenetic.run_phylo(params)
     return status
-
 
 @shared_task(bind=True, name="Download Fasta")
 def getNrFasta(self, params):
@@ -37,6 +34,8 @@ def structure_comparison(self, params):
     params['uuid'] = myuuid
     self.update_state(state='PROGRESS')
     # TODO add funciton here
-    tmalgin = TMalign.TMalgin()
+    tmalgin = TMalign.TMalgin(params)
+    result = tmalgin.run()
+    print(result)
     # return to results
-    return 0
+    return result
