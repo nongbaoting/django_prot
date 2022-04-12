@@ -14,6 +14,11 @@ def pickle_dump2file(obj, filename):
     pickle.dump(list(obj), fo)
     fo.close()
 
+def pickle_dumpObj2file(obj, filename): 
+    fo =  open(filename, 'wb')
+    pickle.dump(obj, fo)
+    fo.close()
+
 def pickle_load_file(filename):
     f = open(filename, 'rb')
     obj = pickle.load(f)
@@ -22,7 +27,10 @@ def pickle_load_file(filename):
 
 def numpy_save2file(obj, filename):
     np.savez_compressed(filename, cdd =obj)
-    
+
+def run_cmd(cmd):
+    std = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+    return std
 
 
 def create_submit_form(params, res):

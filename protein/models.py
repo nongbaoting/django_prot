@@ -5,7 +5,6 @@ from django.utils import timezone
 import datetime
 
 # from django_prot import protein
-
 class SubmitInfo(models.Model):
     email_addr = models.EmailField(max_length=50)
     proj_name = models.CharField(max_length=50)
@@ -22,7 +21,6 @@ class SubmitInfo(models.Model):
         if self.run_status is not None:
             line += "\t" + self.run_status
         return line
-
 
 class GeneInfo(models.Model):
     entry_name = models.CharField(max_length=1000, null=True)
@@ -83,6 +81,7 @@ class NrInfo(models.Model):
         return self.protin_id + "\t" + self.desc
 
 class protCD(models.Model):
+    # 放cdd
     cdd_id = models.ForeignKey(CDD, related_name= "cdd_protCD", on_delete=models.CASCADE)
     cdd_name = models.CharField(max_length=255, db_index=True)
     protin_id = models.CharField(max_length=200, db_index=True)
@@ -97,6 +96,7 @@ class protCD(models.Model):
         return self.protin_id + "\t" + self.cdd_name
 
 class protCDncbi(models.Model):
+    # 放cdd ncbi
     cdd_id = models.ForeignKey(CDD, related_name= "cdd_protCDncbi", on_delete=models.CASCADE)
     cdd_name = models.CharField(max_length=255, db_index=True)
     protin_id =  models.CharField(max_length=200, db_index=True)
@@ -109,15 +109,6 @@ class protCDncbi(models.Model):
    
     def __str__(self):
         return self.protin_id + "\t" + self.cdd_name
-
-class protCDncbiCat(models.Model):
-    protin_id =  models.ForeignKey(NrInfo, related_name= "nrinfo_protCDncbi", on_delete=models.CASCADE)
-    cdd_nameCat = models.TextField( )
-    cdd_idCat = models.TextField(  )
-    
-    def __str__(self):
-        return self.protin_id + "\t" + self.cdd_nameCat
-
 class protCDncbiOne(models.Model):
     protin_id = models.CharField(max_length=200, db_index=True)
     protin_nr =  models.ForeignKey(NrInfo, related_name= "nrinfo_protCDncbiOne", on_delete=models.CASCADE)
@@ -126,24 +117,8 @@ class protCDncbiOne(models.Model):
     def __str__(self):
         return self.protin_id + "\t" + self.cdd_nameCat
 
-class NrCD(models.Model):
-    cdd_id = models.ForeignKey(CDD, related_name= "cdd_nrcd", on_delete=models.CASCADE)
-    protin_id =  models.CharField(max_length=200, db_index=True)
-    length = models.IntegerField(db_index=True,)  
-    desc  = models.CharField(max_length=1000, db_index=True,)
-    pssm  = models.CharField(max_length=100, db_index=True,)
-    start = models.IntegerField(db_index=True,)  
-    end = models.IntegerField(db_index=True,)  
-    evalue = models.CharField(max_length=100, db_index=True,)
-    biscore = models.CharField(max_length=100, db_index=True,)
-    cdd_name = models.CharField(max_length=1000,db_index=True,)
-    cdd_nameCat = models.TextField( )
-    cdd_idCat = models.TextField( null=True )
-    
-    def __str__(self):
-        return self.protin_id + "\t" + self.cdd_name
-
 class ProtCDD(models.Model):
+    # genbank region
     protin_id =  models.CharField(max_length=200, db_index=True, unique=True, primary_key=True)
     length = models.IntegerField(db_index=True,)
     cdd_ids = models.TextField()
@@ -154,37 +129,41 @@ class ProtCDD(models.Model):
     def __str__(self):
         return self.protin_id + "\t" + self.cdd_annots
 
-class ProtCDDeach(models.Model):
-    protin_id =  models.CharField(max_length=200, db_index=True, )
-    length = models.IntegerField(db_index=True,)
-    cdd_id = models.CharField(max_length=200,db_index=True,)
-    cdd_name = models.CharField(max_length=1000,db_index=True,)
-    cdd_note = models.CharField(max_length=1000, db_index=True,)
-    cdd_loca = models.CharField(max_length=200,db_index=True,) 
-    
-    def __str__(self):
-        return self.protin_id + "\t" + self.cdd_name
+class ScopeCla(models.Model):
+    domain = models.CharField(max_length=100, db_index=True)
+    TP = models.CharField(max_length=100, db_index=True)
+    CL = models.CharField(max_length=100, db_index=True)
+    CF = models.CharField(max_length=100, db_index=True)
+    SF = models.CharField(max_length=100, db_index=True)
+    FA = models.CharField(max_length=100, db_index=True)
+    protein_type = models.CharField(max_length=200, db_index=True)
+    classes = models.CharField(max_length=200, db_index=True)
+    fold = models.CharField(max_length=200, db_index=True)
+    superfamily = models.CharField(max_length=200, db_index=True)
+    family = models.CharField(max_length=200, db_index=True)
 
-class ProtCDDeach2(models.Model):
-    protin_id =  models.CharField(max_length=200, db_index=True, )
-    length = models.IntegerField(db_index=True,)
-    cdd_id = models.CharField(max_length=200,db_index=True,)
-    cdd_name = models.CharField(max_length=1000,db_index=True,)
-    cdd_note = models.CharField(max_length=1000, db_index=True,)
-    cdd_loca = models.CharField(max_length=200,db_index=True,) 
+
+
+
+# class NrCD(models.Model):
+#     cdd_id = models.ForeignKey(CDD, related_name= "cdd_nrcd", on_delete=models.CASCADE)
+#     protin_id =  models.CharField(max_length=200, db_index=True)
+#     length = models.IntegerField(db_index=True,)  
+#     desc  = models.CharField(max_length=1000, db_index=True,)
+#     pssm  = models.CharField(max_length=100, db_index=True,)
+#     start = models.IntegerField(db_index=True,)  
+#     end = models.IntegerField(db_index=True,)  
+#     evalue = models.CharField(max_length=100, db_index=True,)
+#     biscore = models.CharField(max_length=100, db_index=True,)
+#     cdd_name = models.CharField(max_length=1000,db_index=True,)
+#     cdd_nameCat = models.TextField( )
+#     cdd_idCat = models.TextField( null=True )
     
-    def __str__(self):
-        return self.protin_id + "\t" + self.cdd_name
-    
-class ProtCDD2_head(models.Model):
-    protin_id =  models.CharField(max_length=200, db_index=True, unique=True, primary_key=True)
-    length = models.IntegerField(db_index=True,)
-    cdd_ids = models.TextField()
-    cdd_annots = models.TextField()
-    cdd_notes = models.TextField( )
-    cdd_locs = models.TextField( )
-    
-    def __str__(self):
-        return self.protin_id + "\t" + self.cdd_annots
+#     def __str__(self):
+#         return self.protin_id + "\t" + self.cdd_name
+
+
+
+
 
 

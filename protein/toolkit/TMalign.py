@@ -16,6 +16,7 @@ import subprocess
 from multiprocessing import Pool
 from collections import defaultdict
 from protein.toolkit import myFunctions
+from protein.models import *
 
 def parse_TMalign(outLogs):
     re_pdb = re.compile(r'.pdb$|.pdb.gz$|.cif$|.cif.gz$')
@@ -71,7 +72,7 @@ def parse_TMalign(outLogs):
                "d01": m_score.group("d01"), "d02":m_score.group("d02"),
                "seq_1": m_align.group("seq_1"), "pairwise": m_align.group("pairwise"), "seq_2": m_align.group("seq_2")
         }
-        if float(tmscore_2) > 0.5:
+        if float(tmscore_2) > 0:
             # print(lt_)
             # print("%s\n%s\n%s\n" % (seq_1,pairwise,seq_2))
             lt.append(lt_)
@@ -81,7 +82,7 @@ def parse_TMalign(outLogs):
 def scanAndFind_pattern(mydir, mypattern):
     wantFiles = []
     for entry in os.scandir(mydir):
-        if (entry.is_file() or entry.is_link()) and mypattern.search(entry.name):
+        if entry.is_file()  and mypattern.search(entry.name):
             wantFiles.append(entry)
         elif entry.is_dir():
             wantFiles.extend(scanAndFind_pattern(entry.path, mypattern))
@@ -117,13 +118,46 @@ def parse_scope(Fi="/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt")
             dt[cell[0]] = cell
     return dt
 
+def item_add(item):
+    pdb1 = item['chain_1']
+    pdb2 = item['chain_2']
+    # pdb1, pdb2 = arr[0:2]
+    pdb1_prot = pdb1.split('.')[0]
+    pdb2_domainID, pdb2_prot, pdb2_pdbID, chain = pdb2.split('.')[0:4]
+    # arr.append(pdb1_prot)
+    # arr.extend([pdb2_domainID, pdb2_prot, pdb, chain])
+    # fo.write("\t".join(arr) + '\n')
+    item['chain_1_uniprot'] = pdb1_prot
+
+    item['chain_2_scopeDomain'] = pdb2_domainID
+    item['chain_2_uniprot'] =  pdb2_prot
+    item['chain_2_pdb'] = pdb2_pdbID
+    item[ 'chain_2_chain'] = chain
+
+    domain_id = item['chain_2_scopeDomain']
+    obj = ScopeCla.objects.filter(domain = domain_id).first()
+    item['family'] = obj.family
+    item['superfamily'] = obj.superfamily
+    return item
+###########################
+def one_to_one(pdb1, pdb2, tempDir, outFi_name):
+    cmd = f'cd {tempDir}; TMalign {pdb1} {pdb2} -o {outFi_name}.sup'
+    run = run_cmd(cmd)
+    outLogs  = run.stdout.decode('utf-8')
+    items =  parse_TMalign(outLogs)
+    # print(items)
+    Oneitem = item_add(items[0])
+    item_pickle = os.path.join(tempDir, outFi_name + '.pickle')
+    myFunctions.pickle_dumpObj2file(Oneitem, item_pickle)
+    return  Oneitem 
+
 # scopeDomain_dir = "/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain"
-scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/test"
+# scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/test"
 class TMalgin:
 
     def __init__(self,params):
         self.dir_1 = params['dir_1']
-        self.dir_2 = scopeDomain_dir
+        self.dir_2 = params['dir_2']
         self.result_dir = myFunctions.create_tmpDir(params['struc_cpm_dir'], params['uuid'])
         self.outFi = os.path.join(self.result_dir, params['outFi_name'])
 
@@ -154,25 +188,6 @@ class TMalgin:
         for res_ in res:
             run = res_.get()
             self.outLogs += run.stdout.decode('utf-8')
-        #     fo.write(run.stdout.decode('utf-8'))
-        # fo.close()
-
-    def one_vs_all(self, input_pdb, db_dir, core=8):
-        pattern = re.compile('.pdb$|.pdb.gz$', re.IGNORECASE)
-        pdbfiles = scanAndFind_pattern(db_dir, pattern)
-
-        res = []
-        pool = Pool(core)
-        for entry in pdbfiles:
-            cmd = f'TMalign {input_pdb} {entry.path}'
-            res_ = pool.apply_async(run_cmd, (cmd,))
-        pool.close()
-        pool.join()
-        fo = open("res.txt", 'w')
-        for res_ in res:
-            run = res_.get()
-            fo.write(run.stdout.decode('utf-8'))
-        fo.close()
 
     def parseLogFile(self, ):
         tmalign = parse_TMalign(self.outLogs)
@@ -187,22 +202,23 @@ class TMalgin:
         print("#format scope")
         arr = []
         for item in tmalign:
-            pdb1 = item['chain_1']
-            pdb2 = item['chain_2']
-            # pdb1, pdb2 = arr[0:2]
-            pdb1_prot = pdb1.split('.')[0]
-            pdb2_domainID, pdb2_prot, pdb2_pdbID, chain = pdb2.split('.')[0:4]
-            # arr.append(pdb1_prot)
-            # arr.extend([pdb2_domainID, pdb2_prot, pdb, chain])
-            # fo.write("\t".join(arr) + '\n')
-            item['chain_1_uniprot'] = pdb1_prot
+            # pdb1 = item['chain_1']
+            # pdb2 = item['chain_2']
+            # # pdb1, pdb2 = arr[0:2]
+            # pdb1_prot = pdb1.split('.')[0]
+            # pdb2_domainID, pdb2_prot, pdb2_pdbID, chain = pdb2.split('.')[0:4]
+            # # arr.append(pdb1_prot)
+            # # arr.extend([pdb2_domainID, pdb2_prot, pdb, chain])
+            # # fo.write("\t".join(arr) + '\n')
+            # item['chain_1_uniprot'] = pdb1_prot
 
-            item['chain_2_scopeDomain'] = pdb2_domainID
-            item['chain_2_uniprot'] =  pdb2_prot
-            item['chain_2_pdb'] = pdb2_pdbID
-            item[ 'chain_2_chain'] = chain 
-            arr.append(item)
-        myFunctions.pickle_dump2file(arr, self.outFi)
+            # item['chain_2_scopeDomain'] = pdb2_domainID
+            # item['chain_2_uniprot'] =  pdb2_prot
+            # item['chain_2_pdb'] = pdb2_pdbID
+            # item[ 'chain_2_chain'] = chain 
+            arr.append(item_add(item))
+        res = sorted(arr, key=lambda k: float(k["tmscore_2"]), reverse=True)
+        myFunctions.pickle_dump2file(res[0:100], self.outFi)
       
 
 

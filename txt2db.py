@@ -114,70 +114,7 @@ class RUN:
         if count >0:           
             ProtCDD.objects.bulk_create(info)
         print(all + count)
-    def ProtCDD2_head(self, Fi="/dat1/dat/db/refseq/head.tsv"):
-        from protein.models import ProtCDD2_head
-        all = ProtCDD2_head.objects.all().delete()
-        info = []
-        count = 0
-        all=0
-        
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.strip('\n').split("\t")
-                if cell[3]:
-                    q =ProtCDD2_head(
-                        protin_id=cell[0],
-                        length= int(cell[1]),
-                        cdd_ids= cell[2],
-                        cdd_annots=cell[3],
-                        cdd_notes= cell[5],
-                        cdd_locs=cell[4],
-                    )
-                    info.append(q)
-                    count +=1
-                    if count > 500000:
-                        all += count
-                        print("now:", all,"add:",count)
-                        ProtCDD2_head.objects.bulk_create(info)
-                        count=0
-                        info=[]
-        if count >0:           
-            ProtCDD2_head.objects.bulk_create(info)
-        print(all + count)
     
-    def ProtCDDeach(self, Fi="/dat1/dat/db/refseq/archaea.region_cdd.each.tsv"):
-        from protein.models import ProtCDDeach
-        all = ProtCDDeach.objects.all().delete()
-        info = []
-        count = 0
-        all=0
-        
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.strip('\n').split("\t")
-                if cell[3]:
-                    q =ProtCDDeach(
-                        protin_id=cell[0],
-                        length= int(cell[1]),
-                        cdd_id = cell[2],
-                        cdd_name = cell[3],
-                        
-                        cdd_loca = cell[4],
-                        cdd_note = cell[5],
-                    )
-                    info.append(q)
-                    count +=1
-                    if count > 500000:
-                        all += count
-                        print("now:", all,"add:",count)
-                        ProtCDDeach.objects.bulk_create(info)
-                        count=0
-                        info=[]
-        if count >0:           
-            ProtCDDeach.objects.bulk_create(info)
-        print(all + count)
     def CDD(self, Fi = "/dat1/dat/db/CDD/data/cddid.tbl"):
         from protein.models import CDD
         # all = CDD.objects.all().delete()
@@ -243,9 +180,7 @@ class RUN:
                 # print(cell[1])
                 shor_desc = short(cell[3])
                 CDD.objects.filter(cdd_id = cell[1]).update(cdd_desc_short = shor_desc)
-      
-        
-                
+                   
     def NrInfo(self, Fi="/dat1/dat/db/nr/divided/nr_gt400_id_files.txt"):
         from protein.models import NrInfo
         nr = NrInfo.objects.all().delete()
@@ -273,39 +208,7 @@ class RUN:
             NrInfo.objects.bulk_create(info)
         print(all + count)
 
-    def ProtCDDeach2(self, Fi="/dat1/dat/db/refseq/archaea.region_cdd.each.tsv"):
-        from protein.models import ProtCDDeach2
-        all = ProtCDDeach2.objects.all().delete()
-        info = []
-        count = 0
-        all=0
-        
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.strip('\n').split("\t")
-                if cell[3]:
-                    q =ProtCDDeach2(
-                        protin_id=cell[0],
-                        length= int(cell[1]),
-                        cdd_id = cell[2],
-                        cdd_name = cell[3],
-                        
-                        cdd_loca = cell[4],
-                        cdd_note = cell[5],
-                    )
-                    info.append(q)
-                    count +=1
-                    if count > 500000:
-                        all += count
-                        print("now:", all,"add:",count)
-                        ProtCDDeach2.objects.bulk_create(info)
-                        count=0
-                        info=[]
-        if count >0:           
-            ProtCDDeach2.objects.bulk_create(info)
-        print(all + count)
-    
+      
     def NrCD(self, Fi="/dat1/dat/db/nr/CD/tmp/blast.tsv"):
         from protein.models import NrCD
         all = NrCD.objects.all().delete()
@@ -392,35 +295,6 @@ class RUN:
             protCDncbi.objects.bulk_create(info)
         print(all + count)
     
-    def protCDncbiCat(self, Fi="/dat1/dat/db/nr/CD/nr_gt400.1030.fa.tsv"):
-        from protein.models import protCDncbiCat, NrInfo
-        # all = protCDncbiCat.objects.all().delete() 
-        info = []
-        count,all= 0,0
-        nrinfo = protCDncbiCat.objects.all()
-        # [query, length, desc, pssm, start, end, evalue,
-        #                           biscore, cdd_id, cdd_name, cdd_name_cat, cdd_note_cat
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.strip('\n').split("\t")
-                q = protCDncbiCat(
-                        protin_id =  nrinfo.filter(protin_id = cell[0]).first(),
-                        cdd_nameCat =cell[10],
-                        cdd_idCat = cell[11]
-                )
-                info.append(q)
-                count +=1
-                if count > 100000:
-                    all += count
-                    print("now:", all,"add:",count)
-                    protCDncbiCat.objects.bulk_create(info)
-                    count=0
-                    info=[]
-        if count >0:           
-            protCDncbiCat.objects.bulk_create(info)
-        print(all + count)
-
     def protCDncbiOne(self, Fi="/dat1/dat/db/nr/CD/merge/nr_gt400.1030.merge"):
         from protein.models import protCDncbiOne, NrInfo
         # all = protCDncbiOne.objects.all().delete() 
@@ -448,6 +322,39 @@ class RUN:
                     info=[]
         if count >0:           
             protCDncbiOne.objects.bulk_create(info)
+        print(all + count)
+    
+    def ScopeCla(self, Fi="/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt"):
+        from protein.models import ScopeCla
+        ScopeCla.objects.all().delete()
+        info = []
+        count,all= 0,0
+        with open(Fi) as f:
+            next(f)
+            for li in f:
+                cell = li.strip('\n').split("\t")
+                q = ScopeCla(
+                    domain = cell[0],
+                    TP = cell[1],
+                    CL = cell[2],
+                    CF =cell[3],
+                    SF = cell[4],
+                    FA = cell[5],
+                    protein_type = cell[6],
+                    classes= cell[7],
+                    fold = cell[8],
+                    superfamily = cell[9],
+                    family = cell[10] )
+                info.append(q)
+                count +=1
+                if count > 100000:
+                    all += count
+                    print("now:", all,"add:",count)
+                    ScopeCla.objects.bulk_create(info)
+                    count=0
+                    info=[]
+        if count >0:           
+            ScopeCla.objects.bulk_create(info)
         print(all + count)
 
     def tempFix(self,):

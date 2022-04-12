@@ -7,9 +7,10 @@ from django.conf import settings
 from django.http import JsonResponse,FileResponse, Http404
 from collections import defaultdict
 from protein.toolkit import *
+from protein.models import *
 from protein import tasks
 from py4j.java_gateway import JavaGateway
-
+from protein.toolkit import TMalign
 # jarpath = "/training/nong/web/java/CalProSimilariry-1.0.1-jar-with-dependencies.jar"
 # 读入biozernike 信息
 human_biozernike = "/training/nong/protein/biozernike/human/human_biozernike.json"
@@ -29,7 +30,7 @@ biozernike = {
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
 struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_comparison"
-scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/test"
+scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain"
 ################ view ###############
 def DUF_SPalign(request):
     jsonFi = "/training/nong/web/data/res/struc_comparison/duf_q2_cov.6.json"
@@ -44,27 +45,33 @@ def results(request):
         resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
         print(resFi)
         res = myFunctions.pickle_load_file(resFi)
-        data = {'data':res}
+        res = sorted(res, key=lambda k: float(k["tmscore_2"]), reverse=True)
+        data = {'data':res[0:50]}
         return JsonResponse(data)
 
 def getOneItem(request):
     if request.method =="GET":
         myuuid = request.GET.get('uuid')
-        resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
         dataType = request.GET.get("dataType")
-        print(dataType)
-        if dataType == 'input_pdb':
-            fileName = request.GET.get("fileName")
-            pdb_fi = os.path.join(struc_cpm_dir, myuuid, fileName)
-            if os.path.exists(pdb_fi):
-                print(pdb_fi)
-                fh = open(pdb_fi, 'rb')
-                return FileResponse(fh)
+        tmpdir = os.path.join(struc_cpm_dir, myuuid)
+        input_pdb = os.path.join(tmpdir, request.GET.get('input_pdb') )
+        db_pdb =  os.path.join(scopeDomain_dir, request.GET.get('db_pdb') )
+        outFi_name = request.GET.get('input_pdb') + request.GET.get('db_pdb')
+        item_pickle = os.path.join(tmpdir, outFi_name + '.pickle')
+        if dataType == 'info':
+            if not os.path.exists(item_pickle):
+                item = TMalign.one_to_one(input_pdb, db_pdb, tmpdir,outFi_name)
             else:
-                raise Http404("File not exist!" + pdb_fi)
+                item = myFunctions.pickle_load_file(item_pickle)
+            return JsonResponse(add_scopecla(item))
+        if dataType == 'input_pdb':
+            pdb_fi = os.path.join(tmpdir, outFi_name + '.sup.pdb')
+            print(pdb_fi)
+            fh = open(pdb_fi, 'rb')
+            return FileResponse(fh)
+            
         elif dataType == "db_pdb":
-            fileName = request.GET.get("fileName")
-            pdb_fi = os.path.join(scopeDomain_dir, fileName )
+            pdb_fi = db_pdb
             if os.path.exists(pdb_fi):
                 print(pdb_fi)
                 fh = open(pdb_fi, 'rb')
@@ -72,9 +79,6 @@ def getOneItem(request):
             else:
                 print("File not exist!" + pdb_fi)
                 raise Http404("File not exist!" + pdb_fi)
-
-
-
 
 def upload_pdb(request):
     reg_af = re.compile('AF-')
@@ -110,6 +114,8 @@ def upload_pdb(request):
         # params = myFunctions.load_POST(request)
         params ={}
         params['dir_1'] = tempDir
+        params['dir_2'] = scopeDomain_dir
+        params['job_name'] =request.POST.get('job_name')
         print(tempDir)
         params['proj_type'] = "Structure Comparison"
         params['struc_cpm_dir'] = struc_cpm_dir
@@ -118,48 +124,14 @@ def upload_pdb(request):
         myFunctions.create_submit_form(params, res)
         return JsonResponse({'msg':200})
 
-
-        # myList = []
-        # # alphafold
-        # for entry in scanAndFind_notZip(tempDir):
-        #     scores = compare_descriptor(entry.path, 'human')
-        #     scores2 = compare_descriptor(entry.path, 'pdb')
-        #     input_name = entry.name.split('.')[0]
-        #     for key, values in scores.items():
-        #         lst = defaultdict(str)
-        #         lst['input'] = input_name
-        #         lst['input_file'] = tempDirName + '/' + entry.name
-        #         new_key = key
-        #         if reg_af.match(key):
-        #             new_key = key.split('-')[1]
-        #         lst["target"] = new_key
-        #         lst['target_file'] = 'data/alphafold/' + key + ".cif.gz"
-        #         lst["geo_score"] = round(values[2], 1)
-        #         lst["cn_score"] = round(values[3], 1)
-        #         lst["total_score"] = round(values[4], 1)
-        #         lst['source'] = 'AlphaFold 2'
-        #         myList.append(lst)
-
-        #     # pdb
-        #     for key, values in scores2.items():
-        #         lst = defaultdict(str)
-        #         lst['input'] = input_name
-        #         lst['input_file'] = tempDirName + '/' + entry.name
-        #         new_key = key
-        #         lst["target"] = new_key
-        #         lst['target_file'] = 'data/pdb/' + key + ".cif"
-        #         lst["geo_score"] = round(values[2], 1)
-        #         lst["cn_score"] = round(values[3], 1)
-        #         lst["total_score"] = round(values[4], 1)
-        #         lst['source'] = 'PDB'
-        #         myList.append(lst)
-
-        #     print("match structure AF: ", len(scores))
-        #     print("match structure PDB: ", len(scores2))
-        # # os.system('rm -rf ')
-        # return JsonResponse({'data': myList})
-
 ################## function ###############################
+
+def add_scopecla(item):
+    domain_id = item['chain_2_scopeDomain']
+    obj = ScopeCla.objects.filter(domain = domain_id).first()
+    item['family'] = obj.family
+    item['superfamily'] = obj.superfamily
+    return item
 
 def scanAndFind_notZip(mydir):
     wantdir = []
