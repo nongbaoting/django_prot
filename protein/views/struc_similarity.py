@@ -45,9 +45,9 @@ def results(request):
         resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
         print(resFi)
         res = myFunctions.pickle_load_file(resFi)
-        res = [item for item in res if float(item['tmscore_1'] )>0.3 and  float(item['tmscore_2'] )>0.3 ]
-        res = sorted(res, key=lambda k: float(k["tmscore_2"]), reverse=True)
-        data = {'data':res[0:100]}
+        dt = get_one_page(res, request)
+        data = {'data':dt,
+        'totalCount':len(res)}
         return JsonResponse(data)
 
 def getOneItem(request):
@@ -126,6 +126,29 @@ def upload_pdb(request):
         return JsonResponse({'msg':200})
 
 ################## function ###############################
+
+def get_one_page(newQ, request):
+    pageSize = int(request.GET.get('pageSize'))
+    currentPage = int(request.GET.get('currentPage'))
+    order="descending"
+    field= "tmscore_1"
+    order = request.GET.get('order')
+    isSort = request.GET.get('isSort')
+    field = request.GET.get('field')
+    if isSort:
+        print("order field", order, field,isSort)
+        if order == "descending":
+            newQ = sorted(newQ, key=lambda k: k[field], reverse=True)
+        else:
+            newQ = sorted(newQ, key=lambda k: k[field])
+
+    requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
+    content = []
+    for item in requestData:
+        add_scopecla(item)
+        content.append( add_scopecla(item) )
+    return  content
+
 
 def add_scopecla(item):
     domain_id = item['chain_2_scopeDomain']

@@ -134,10 +134,10 @@ def item_add(item):
     item['chain_2_pdb'] = pdb2_pdbID
     item[ 'chain_2_chain'] = chain
 
-    domain_id = item['chain_2_scopeDomain']
-    obj = ScopeCla.objects.filter(domain = domain_id).first()
-    item['family'] = obj.family
-    item['superfamily'] = obj.superfamily
+    # domain_id = item['chain_2_scopeDomain']
+    # obj = ScopeCla.objects.filter(domain = domain_id).first()
+    # item['family'] = obj.family
+    # item['superfamily'] = obj.superfamily
     return item
 ###########################
 def one_to_one(pdb1, pdb2, tempDir, outFi_name):
@@ -145,7 +145,7 @@ def one_to_one(pdb1, pdb2, tempDir, outFi_name):
     run = run_cmd(cmd)
     outLogs  = run.stdout.decode('utf-8')
     items =  parse_TMalign(outLogs)
-    # print(items)
+    print(items)
     Oneitem = item_add(items[0])
     item_pickle = os.path.join(tempDir, outFi_name + '.pickle')
     myFunctions.pickle_dumpObj2file(Oneitem, item_pickle)
@@ -161,7 +161,7 @@ class TMalgin:
         self.result_dir = myFunctions.create_tmpDir(params['struc_cpm_dir'], params['uuid'])
         self.outFi = os.path.join(self.result_dir, params['outFi_name'])
 
-    def run(self,):
+    def run(self,): 
         self.dir_vs_dir(self.dir_1, self.dir_2)
         self.parseLogFile()
         subprocess.run(f'cp  {self.dir_1}/* {self.result_dir}' , shell=True)
@@ -203,7 +203,8 @@ class TMalgin:
         arr = []
         for item in tmalign:
             arr.append(item_add(item))
-        res = sorted(arr, key=lambda k: float(k["tmscore_2"]), reverse=True)
+        res = sorted(arr, key=lambda k: float(k["tmscore_1"]), reverse=True)
+        res = [k for k in res if float(k['tmscore_2'] > 0.3)]
         myFunctions.pickle_dump2file(res, self.outFi)
       
 

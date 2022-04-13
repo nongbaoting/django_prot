@@ -144,7 +144,6 @@ class ScopeCla(models.Model):
 
 
 
-
 # class NrCD(models.Model):
 #     cdd_id = models.ForeignKey(CDD, related_name= "cdd_nrcd", on_delete=models.CASCADE)
 #     protin_id =  models.CharField(max_length=200, db_index=True)

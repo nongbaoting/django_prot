@@ -30,7 +30,7 @@ python manage.py runserver 222.200.186.47:9001
 conda env create -f environment.yml
 
 # 启动
-
+发布 ，更改redis `django_prot/celeryconfig.py`
 # 1. 启动 java. Biozernike
 <!-- cp -r /training/nong/web/Dev/django_prot .
 cd /training/nong/web/java
