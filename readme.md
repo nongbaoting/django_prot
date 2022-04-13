@@ -1,8 +1,8 @@
-```bash
+
 # django-admin startproject mysite
 
 # 创建应用
-python manage.py startapp protein
+# python manage.py startapp protein
 
 # 应用数据库
 # del 
@@ -25,12 +25,16 @@ python manage.py runserver 222.200.186.47:9000
 # publish test
 python manage.py runserver 222.200.186.47:9001
 
+
+#### 重现步骤 安装
+conda env create -f environment.yml
+
 # 启动
 
 # 1. 启动 java. Biozernike
-cp -r /training/nong/web/Dev/django_prot .
+<!-- cp -r /training/nong/web/Dev/django_prot .
 cd /training/nong/web/java
-nohub java -cp /training/nong/web/java/CalProSimilariry-1.0.1-jar-with-dependencies.jar sysu.JPype.Compare
+nohub java -cp /training/nong/web/java/CalProSimilariry-1.0.1-jar-with-dependencies.jar sysu.JPype.Compare -->
 
 # 2. 启动wachdog。 alphafold, roseTTAFold
 cd /training/nong/web/public/django_prot
@@ -41,7 +45,7 @@ cd /training/nong/web/public/django_prot
 source activate webProt
 python run_predict.py  watch_blast /dat1/nbt2/proj/21-prot/web/data/uploads/blast
 
-# 3. 启动 Django
+#### 重现步骤 3. 启动 Django
 sshfs -o nonempty nbt2@222.200.186.124:/dat1/ /dat1/
 source activate webProt
 cd /training/nong/web/public/django_prot
@@ -52,7 +56,7 @@ sudo systemctl restart apache2
 
 # dev
 python manage.py runserver 222.200.186.47:9001
-```
+
 
 # django 目录
 `/training/nong/web/public`

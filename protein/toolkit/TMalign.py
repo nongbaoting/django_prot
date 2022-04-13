@@ -66,9 +66,9 @@ def parse_TMalign(outLogs):
             "chain_1": chain_1, "chain_2":chain_2,
              "chain_1_len":  m_nameLen.group('chain_1_len'),  'chain_2_len': m_nameLen.group(
                    'chain_2_len'), 'align_len': m_misc.group('align_len'), 
-                   "cov_1":str(cov_1), "cov_2": str(cov_2),
+                   "cov_1":cov_1, "cov_2": cov_2,
                'RMSD':m_misc.group('RMSD'), 'Seq_ID': m_misc.group(
-                   'Seq_ID'), "tmscore_1": tmscore_1, "tmscore_2": tmscore_2,
+                   'Seq_ID'), "tmscore_1": float(tmscore_1), "tmscore_2": float(tmscore_2),
                "d01": m_score.group("d01"), "d02":m_score.group("d02"),
                "seq_1": m_align.group("seq_1"), "pairwise": m_align.group("pairwise"), "seq_2": m_align.group("seq_2")
         }
@@ -202,23 +202,9 @@ class TMalgin:
         print("#format scope")
         arr = []
         for item in tmalign:
-            # pdb1 = item['chain_1']
-            # pdb2 = item['chain_2']
-            # # pdb1, pdb2 = arr[0:2]
-            # pdb1_prot = pdb1.split('.')[0]
-            # pdb2_domainID, pdb2_prot, pdb2_pdbID, chain = pdb2.split('.')[0:4]
-            # # arr.append(pdb1_prot)
-            # # arr.extend([pdb2_domainID, pdb2_prot, pdb, chain])
-            # # fo.write("\t".join(arr) + '\n')
-            # item['chain_1_uniprot'] = pdb1_prot
-
-            # item['chain_2_scopeDomain'] = pdb2_domainID
-            # item['chain_2_uniprot'] =  pdb2_prot
-            # item['chain_2_pdb'] = pdb2_pdbID
-            # item[ 'chain_2_chain'] = chain 
             arr.append(item_add(item))
         res = sorted(arr, key=lambda k: float(k["tmscore_2"]), reverse=True)
-        myFunctions.pickle_dump2file(res[0:100], self.outFi)
+        myFunctions.pickle_dump2file(res, self.outFi)
       
 
 

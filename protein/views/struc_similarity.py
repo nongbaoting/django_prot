@@ -45,8 +45,9 @@ def results(request):
         resFi = os.path.join(struc_cpm_dir, myuuid, 'TMalgin.pickle')
         print(resFi)
         res = myFunctions.pickle_load_file(resFi)
+        res = [item for item in res if float(item['tmscore_1'] )>0.3 and  float(item['tmscore_2'] )>0.3 ]
         res = sorted(res, key=lambda k: float(k["tmscore_2"]), reverse=True)
-        data = {'data':res[0:50]}
+        data = {'data':res[0:100]}
         return JsonResponse(data)
 
 def getOneItem(request):
