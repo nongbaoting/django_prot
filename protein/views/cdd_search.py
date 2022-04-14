@@ -37,6 +37,9 @@ def retrieve_save(request):
         this_uuid = request.GET.get('uuid')
         dumpFi = path.join(cdd_dump_dir, this_uuid + '.npz')
         newQ = load_cdd_data(this_uuid)
+        data = {}
+        data["data"] =  []
+        data['totalCount'] = 0
         if len(newQ) > 0:
             count = len(newQ)
             data = {"status": 200}
@@ -64,8 +67,8 @@ def retrieve_save(request):
             data['uuid'] =  this_uuid
             return JsonResponse(data )
         else:
-            print("file not found:",dumpFi)
-            raise Http404
+            data['uuid'] =  this_uuid
+            return JsonResponse(data )
 
 def filter_cdd_save(request):
     param = myFunctions.load_POST(request)
@@ -126,6 +129,7 @@ def slim_domain(domains):
 
 def load_cdd_data(this_uuid):
     dumpFi = path.join(cdd_dump_dir, this_uuid + '.npz')
+    newQ = []
     if this_uuid in saveCddDict:
         print('using cache...')
         newQ = saveCddDict[this_uuid]
@@ -142,7 +146,6 @@ def load_cdd_data(this_uuid):
             print("delte key:", headKey )
             del saveCddDict[headKey]
             print("keys number: ", len( saveCddDict.keys() ) )
-    
     return newQ
 
 def get_one_page(newQ, currentPage,pageSize):

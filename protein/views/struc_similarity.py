@@ -99,7 +99,7 @@ def upload_pdb(request):
             for file in fileData:
                 fileName = file._get_name()
 
-                # fileName = reg_W.sub('_', fileName)
+                fileName = reg_W.sub('_', fileName)
                 filePath = os.path.join(tempDir, fileName)
                 print('filepath = [%s]' % filePath)
                 try:
