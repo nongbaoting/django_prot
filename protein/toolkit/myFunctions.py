@@ -3,6 +3,7 @@ from os import path
 import pickle, datetime
 from protein.models import SubmitInfoNew
 import numpy as np 
+from collections import defaultdict
 
 def create_tmpDir(baseDir, myuuid):
     tmpdir = path.join(baseDir, myuuid)
@@ -53,3 +54,45 @@ def load_POST(request):
     body = json.loads(body_unicode)
     return body
 
+colorSet = [
+  '#8DD3C7','#FFFFB3','#BEBADA','#FB8072','#80B1D3','#FDB462', '#B3DE69',
+  '#FCCDE5',
+  '#D9D9D9',
+  '#BC80BD',
+  '#CCEBC5',
+  '#FFED6F',
+  '#1B9E77',
+  '#D95F02',
+  '#7570B3',
+  '#E7298A',
+  '#66A61E',
+  '#E6AB02',
+  '#A6761D',
+  '#666666',
+  '#543005',
+  '#8C510A',
+  '#BF812D',
+  '#DFC27D',
+  '#F6E8C3',
+  '#C7EAE5',
+  '#80CDC1',
+  '#35978F',
+  '#01665E',
+  '#003C30',
+]
+
+def addCDcorlor(content,colors=colorSet):
+    myd = defaultdict(str)
+    index = 0
+    new_arr = []
+    for items in content:
+        # print(items['cdd_locs'])
+        for loc in items['cdd_locs']:
+            if not loc[2] in myd:
+                myd[loc[2]] =  colors[index]
+                index += 1
+                if index >= len(colors):
+                    index=0
+            loc.append(myd[ loc[2] ])
+        new_arr.append(items)
+    return new_arr

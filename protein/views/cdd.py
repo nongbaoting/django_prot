@@ -121,7 +121,7 @@ def search(request):
             newQ = protCDncbiOne.objects.filter(protin_id__in = querySet.values('protin_id').distinct() )
             # save cache
             print("save cache")
-            cache.clear()
+            # cache.clear()
             this_uuid = str(uuid.uuid4())
             newParams['uuid'] = this_uuid
             myuuid_q = this_uuid + '_querySet'
@@ -138,21 +138,26 @@ def search(request):
         for q in requestData:
             cdd_notes, cdd_names = [],[]
             cdd_ids = q.cdd_idCat.split(', ')
+            cdd_locs= []
             protin = NrInfo.objects.filter(protin_id = q.protin_id).first()
-            for cdd_id_ in cdd_ids:
-                qcd = CDD.objects.get(cdd_id = cdd_id_)
+            regions = protCDncbi.objects.filter(protin_id = q.protin_id)
+            for qr in regions:
+                qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
                 cdd_notes.append(qcd.cdd_desc)
                 cdd_names.append(qcd.cdd_name)
+                cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
             # cdd_notes = '^^'.join(cdd_notes)
             items = {
                 "protin_id":q.protin_id,
                 "length": protin.length,
                 "cdd_names": cdd_names,
                 "cdd_notes":cdd_notes,
-                "cdd_ids":cdd_ids
+                "cdd_ids":cdd_ids,
+                "cdd_locs":cdd_locs
             }
             content.append(items)
-        
+        print("addCDcorlor")
+        content = myFunctions.addCDcorlor(content)
         data["data"] =  content
         data['totalCount'] = count
         data['uuid'] =  this_uuid
@@ -187,34 +192,32 @@ def pages(request):
             #  order
             myuuid_order = this_uuid + f'{order}.{field}'
             print("order field", order, field)
-            # if myuuid_order !=cache.get(myuuid_order):
-            #     if order == "descending":
-            #         newQ = sorted(newQ, key=lambda k: k[field], reverse=True)
-            #     else:
-            #         newQ = sorted(newQ, key=lambda k: k[field])
-                
-            #     cache.set(myuuid_order, f'{order}.{field}', 60 *60)
             
             requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
             content = []
             for q in requestData:
                 cdd_notes, cdd_names = [],[]
                 cdd_ids = q.cdd_idCat.split(', ')
-                length = NrInfo.objects.get(id = q.protin_nr_id).length
-                for cdd_id_ in cdd_ids:
-                    qcd = CDD.objects.get(cdd_id = cdd_id_)
+                cdd_locs= []
+                protin = NrInfo.objects.filter(protin_id = q.protin_id).first()
+                regions = protCDncbi.objects.filter(protin_id = q.protin_id)
+                for qr in regions:
+                    qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
                     cdd_notes.append(qcd.cdd_desc)
                     cdd_names.append(qcd.cdd_name)
+                    cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
                 # cdd_notes = '^^'.join(cdd_notes)
                 items = {
                     "protin_id":q.protin_id,
-                    "length":length,
+                    "length": protin.length,
                     "cdd_names": cdd_names,
                     "cdd_notes":cdd_notes,
-                    "cdd_ids":cdd_ids
+                    "cdd_ids":cdd_ids,
+                    "cdd_locs":cdd_locs
                 }
                 content.append(items)
-            
+            print("addCDcorlor")
+            content = myFunctions.addCDcorlor(content)
             data["data"] =  content
             data['totalCount'] = count
             data['uuid'] =  this_uuid
