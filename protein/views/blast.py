@@ -17,6 +17,7 @@ from django.core import serializers
 from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
+from protein.toolkit import myFunctions
 
 reg_W = re.compile('\W+')
 reg_fasta = re.compile('^>\w.*\n[\w]{3,}', re.M)
@@ -33,6 +34,7 @@ blast_outdir_old ="/dat1/nbt2/proj/21-prot/web/data/res/bak/blast"
 # run_blast.watch_dog()
 
 # views
+# submit
 def psijackhmmer(request):
     data = {}
     status = 200
@@ -93,12 +95,7 @@ def res_blast_jackhmmer(request):
         order = body["order"]
         field = body["field"]
         print("pageSize:", pageSize, currentPage)
-      
-        # if "field" in request.GET:
-        #     field = request.GET.get("field")
-        #     print("field:", field)
-        #     if request.GET.get("order") == "descending":
-        #         field= '-'+ field
+    
         data['msg'] = 'running'
         resFi,res_id = '',''
         dataset = body['dataset']
@@ -175,9 +172,22 @@ def res_blast_jackhmmer(request):
                 item['cdd_nameCat'] = item['cdd_annots']
                 renameData.append(item)
             requestData = renameData
+        
+        content = []
+        for items in requestData:
+            protin_id  = items['target']
+            cdd_locs= []
+            protin = NrInfo.objects.filter(protin_id =  protin_id).first()
+            regions = protCDncbi.objects.filter(protin_id =  protin_id)
+            for qr in regions:
+                qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
+                cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
+            items["cdd_locs"] = cdd_locs
+            content.append(items)
 
+        content = myFunctions.addCDcorlor(content)
         data = {"totalCount": totalCount,
-                "data":requestData,
+                "data":content,
                 'status':200
                 } 
         

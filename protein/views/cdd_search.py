@@ -52,7 +52,7 @@ def retrieve_save(request):
                 print("order field", order, field)
                 field_dt = {
                     'protin_id':0,
-                    "cdd_nameCat":1
+                    "length":2
                 }
                 field_num = field_dt[field]
                 if order == "descending":
@@ -81,7 +81,7 @@ def filter_cdd_save(request):
     print(param)
     field_dt = {
         'protin_id':0,
-        "cdd_nameCat":1
+        "length":2
     }
     dt=[]
     for mydt in newQ:
@@ -153,20 +153,30 @@ def get_one_page(newQ, currentPage,pageSize):
     content = []
     # cddall = CDD.objects.all()
     for q in requestData:
-        protin_id,cdd_nameCat, cdd_idCat = q
-        cdd_notes=[]
-        cdd_ids = cdd_idCat.split(', ')
-        protin = NrInfo.objects.filter(protin_id = protin_id).first()
-        for cdd_id_ in cdd_ids:
-            qcd = CDD.objects.get(cdd_id = cdd_id_)
+        # q: protin_id, desc, length
+        cdd_notes, cdd_names = [],[]
+        cdd_ids = []
+        cdd_locs= []
+        protin_id = q[0]
+        protin = NrInfo.objects.filter(protin_id =  protin_id).first()
+        regions = protCDncbi.objects.filter(protin_id =  protin_id)
+        for qr in regions:
+            qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
             cdd_notes.append(qcd.cdd_desc)
+            cdd_names.append(qcd.cdd_name)
+            cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
+        # cdd_notes = '^^'.join(cdd_notes)
         items = {
-            "protin_id":protin_id,
-            "length": protin.length,
-            'desc': protin.desc,
-            "cdd_nameCat": cdd_nameCat,
-            "cdd_noteCat": '^^'.join(cdd_notes),
-            "cdd_ids":cdd_ids
+            "protin_id" :protin_id,
+            "length": protin.length, # 改成q[2]
+            'desc':protin.desc, # 改成q[1]
+            "cdd_names": cdd_names,
+            "cdd_notes":cdd_notes,
+            "cdd_ids":cdd_ids,
+            "cdd_locs":cdd_locs
         }
         content.append(items)
+
+    print("addCDcorlor")
+    content = myFunctions.addCDcorlor(content)
     return  content

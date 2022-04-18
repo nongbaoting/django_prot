@@ -63,15 +63,17 @@ def search_save(params):
             nr_domian = querySet.filter(cdd_id__in = cd.values_list('cdd_id', flat=True) )
             querySet = querySet.exclude(protin_id__in =  nr_domian.values_list('protin_id', flat=True).distinct() )
             
-    # print("filter ok region:", querySet.count())
-    # print("filter ok, protin_id:",querySet.values('protin_id').distinct().count())
-    # querySet = querySet.exclude(protin_id__in=id_exclude)
+
     print("query protCDncbiOne")
-    newQ = protCDncbiOne.objects.filter(
+    # newQ = protCDncbiOne.objects.filter(
+    #     protin_id__in = querySet.values('protin_id').distinct() ).values_list(
+    #     'protin_id','cdd_nameCat','cdd_idCat'
+    # )
+    newQ = NrInfo.objects.filter(
         protin_id__in = querySet.values('protin_id').distinct() ).values_list(
-        'protin_id','cdd_nameCat','cdd_idCat'
+        'protin_id','desc','length'
     )
-    
+    newQ = sorted(newQ, key=lambda x: x[2])
     tmpFiName = params["uuid"] + '.npz'
     outFi = path.join(cdd_dump_dir, tmpFiName)
     print(outFi)
