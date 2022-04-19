@@ -139,9 +139,6 @@ def res_blast_jackhmmer(request):
         else:
             "something wrong!"
              
-        
-        ## 保持dict keys 数量
-        # blastDict, blastLt = shift_dict(blastDict, res_id, blastLt, keep_len = 10)
         print("All:", len(dt))
         if len(blastLt) > 10:
             headKey = blastLt.pop(0)
@@ -162,7 +159,7 @@ def res_blast_jackhmmer(request):
             dt = sorted(dt, key=lambda k: k[field], reverse=True)
         else:
             dt = sorted(dt, key=lambda k: k[field])
-        print()
+        
         requestData = dt[(currentPage - 1) * pageSize : currentPage * pageSize]
 
         if dataset =="old":
@@ -178,6 +175,7 @@ def res_blast_jackhmmer(request):
             protin_id  = items['target']
             cdd_locs= []
             protin = NrInfo.objects.filter(protin_id =  protin_id).first()
+            # TODO 旧的用all,新的用NCBI
             regions = protCDncbi.objects.filter(protin_id =  protin_id)
             for qr in regions:
                 qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)

@@ -10,7 +10,8 @@ from .views import jobQueue
 
 app_name = 'protein'
 urlpatterns = [
-     path('login',login.login ),
+    path('login',login.login ),
+    
     # Structure predict
     path('get_token', struc_predict.get_token, name="get_token"),
     path('', struc_predict.index, name='index'),
@@ -22,6 +23,8 @@ urlpatterns = [
     path('predict/structure/check/', struc_predict.check_proj, name="check_proj"),
     path('api/structure/queue/', struc_predict.struc_queue, name='struc_queue'),
     path('api/structure/search/', struc_predict.struc_search, name='struc_search'),
+    path("api/structure/getFile/", struc_predict.struc_getFile, name='struct_getFile'),
+    
     # search
     path('search/', struc_predict.search, name="search"),
     path("test/", struc_predict.test, name="test"),
@@ -47,6 +50,7 @@ urlpatterns = [
     path("api/cdd/search_save/", cdd_search.search_save), 
     path("api/cdd/retrieve_save/", cdd_search.retrieve_save), 
     path("api/cdd/filter_cdd_save/", cdd_search.filter_cdd_save), 
+    
     #phylogenectics
      path("api/phylo/run/", phylogenetic.run_phylo),
      path("api/phylo/get_fasta/", phylogenetic.get_fasta),

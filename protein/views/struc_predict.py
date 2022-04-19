@@ -7,7 +7,7 @@ from collections import defaultdict
 from django.utils import timezone
 from django.shortcuts import render
 from django.core.files import File
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 from django.core import serializers
 import datetime
 # Create your views here.
@@ -20,6 +20,29 @@ reg_genebankRep = re.compile('\d+|\s+')
 reg_blank = re.compile('\d+|\s+')
 uploads_47 = "/training/nong/web/data/uploads/"
 uploads_47_struct = "/training/nong/web/data/uploads/structure_predict/"
+
+# struc_result_dir = "/training/nong/protein/db/web/outputs/results/"
+struc_result_dir = "/training/nong/protein/res/"
+def struc_getFile(request):
+    if request.method == "GET":
+        filetype = request.GET.get('filetype')
+        program  = request.GET.get('program')
+        job_name = request.GET.get('job_name')
+        filename = request.GET.get('filename')
+        # TODO新版 job_name 改为uuid
+        if filetype == "file":
+            filePath = os.path.join(struc_result_dir, program,  job_name, filename)
+            
+        if filetype == "tar":
+            filePath = os.path.join(struc_result_dir, program, filename)
+        if os.path.exists(filePath):
+            print("file ok: ", filePath)
+            fo = open(filePath, 'rb')
+            return FileResponse(fo)
+        else:
+            print("not found: ", filePath)
+            raise Http404
+
 
 def struc_search(request):
     searchType = request.GET.get('searchType')
