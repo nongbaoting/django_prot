@@ -1,4 +1,5 @@
 import os, pickle
+from os import path
 import re
 import zipfile
 import uuid,json
@@ -32,12 +33,23 @@ reg_W = re.compile("\s+")
 struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_comparison"
 scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain"
 ################ view ###############
+
+def aligment(request):
+    if request.method == "GET":
+        pdb1 = request.GET.get('pdb1')
+        pdb2 = request.GET.get('pdb2')
+        pdb1_file=''
+        pdb2_file=''
+        if path.exists(pdb1_file) and path.exists(pdb2_file):
+            pass
+
 def DUF_SPalign(request):
     jsonFi = "/training/nong/web/data/res/struc_comparison/duf_q2_cov.6.json"
     with open(jsonFi)  as f:
         data_str = json.load(f)
         data = {"data":data_str}
         return JsonResponse(data)
+
 
 def results(request):
     if request.method =="GET":
@@ -70,7 +82,6 @@ def getOneItem(request):
             print(pdb_fi)
             fh = open(pdb_fi, 'rb')
             return FileResponse(fh)
-            
         elif dataType == "db_pdb":
             pdb_fi = db_pdb
             if os.path.exists(pdb_fi):

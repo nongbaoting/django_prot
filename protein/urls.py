@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/structure/queue/', struc_predict.struc_queue, name='struc_queue'),
     path('api/structure/search/', struc_predict.struc_search, name='struc_search'),
     path("api/structure/getFile/", struc_predict.struc_getFile, name='struct_getFile'),
+    path("api/structure/getTemplate/", struc_predict.struc_template),
     
     # search
     path('search/', struc_predict.search, name="search"),

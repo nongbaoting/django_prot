@@ -1,3 +1,4 @@
+from opcode import opname
 import re,os
 import time
 import json
@@ -32,7 +33,6 @@ def struc_getFile(request):
         # TODO新版 job_name 改为uuid
         if filetype == "file":
             filePath = os.path.join(struc_result_dir, program,  job_name, filename)
-            
         if filetype == "tar":
             filePath = os.path.join(struc_result_dir, program, filename)
         if os.path.exists(filePath):
@@ -42,7 +42,6 @@ def struc_getFile(request):
         else:
             print("not found: ", filePath)
             raise Http404
-
 
 def struc_search(request):
     searchType = request.GET.get('searchType')
@@ -66,6 +65,19 @@ def struc_search(request):
     data = serializers.serialize('json', queryset)
     return JsonResponse(data, safe=False)
 
+re_template = re.compile(r'Found an exact template match (?P<templae>\w+).$',re.MULTILINE)
+def struc_template(request):
+    if request.method == "GET":
+        job_name = request.GET.get("job_name")
+        program  = request.GET.get('program')
+        run_log =  os.path.join(struc_result_dir, program,  job_name, 'run_err.log')
+        logs = open(run_log).read()
+        groups = re_template.findall(logs)
+        print(groups)
+        data = {
+            'templates':sorted(groups)
+        }
+        return JsonResponse(data)
 
 def struc_queue(request):
     queryset = SubmitInfo.objects.all().order_by('-upload_date')
@@ -74,7 +86,6 @@ def struc_queue(request):
 
 
 def structure_submit(request):
-
     if request.method == 'POST':
         data = {'uploadOk': True}
         body_unicode = request.body.decode('utf-8')
@@ -157,15 +168,7 @@ def search(request):
         def sort_index(item):
             return item['index']
         data.sort(key=sort_index)
-        # print(data)
-        gd = []
-        # for item in q:
-        #
-        #     gd.append({
-        #         'gene_name': item.gene_name,
-        #         'entry_name': item.entry_name,
-        #         'accession': item.accession,
-        #     })
+
         return JsonResponse({'data': data})
     else:
         return render(request, 'protein/search/search.html', {})
