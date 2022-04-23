@@ -134,7 +134,7 @@ class RUN:
             return the_str
         
         with open(Fi) as f:
-            next(f)
+           
             for li in f:
                 cell = li.strip('\n').split("\t")
                 if cell[3]:
@@ -174,7 +174,7 @@ class RUN:
             return the_str
 
         with open(Fi) as f:
-            next(f)
+            
             for li in f:
                 cell = li.strip('\n').split("\t")
                 # print(cell[1])
@@ -253,6 +253,70 @@ class RUN:
         if count >0:           
             NrCD.objects.bulk_create(info)
         print(all + count)
+    def protCD(self, Fi="/dat1/dat/db/nr/CD/tmp/all_1/gt400.all-1.rpsblast.tsv"):
+        from protein.models import protCD, NrInfo,CDD
+        info = []
+        count = 0
+        all=0
+        # [query, length, desc, pssm, start, end, evalue,
+        #                           biscore, cdd_id, cdd_name, cdd_name_cat, cdd_note_cat
+        cdd = CDD.objects.all()
+        with open(Fi) as f:
+            for li in f:
+                cell = li.strip('\n').split("\t")
+                cdd_id = cell[8]
+                print(cdd_id)
+                q = protCD(
+                    cdd_id = cdd.get(cdd_id = cdd_id),
+                    cdd_name = cell[9],
+                    protin_id = cell[0],
+                    length =cell[1],
+                    pssm  = cell[3],
+                    start = int(cell[4]),
+                    end = int(cell[5]), 
+                    evalue = cell[6],
+                    biscore = cell[7],
+                )
+                info.append(q)
+                count +=1
+                if count > 500000:
+                    all += count
+                    print("now:", all,"add:",count)
+                    protCD.objects.bulk_create(info)
+                    count=0
+                    info=[]
+        if count >0:           
+            protCD.objects.bulk_create(info)
+        print(all + count)
+    
+    def protCDOne(self, Fi="/home/nong/tmp/all_2/gt400.allMerge-2.rpsblast.tsv"):
+        from protein.models import protCDOne, NrInfo
+        # all = protCDncbiOne.objects.all().delete() 
+        info = []
+        count,all= 0,0
+        # [query, length, desc, pssm, start, end, evalue,
+        #                           biscore, cdd_id, cdd_name, cdd_name_cat, cdd_note_cat
+        with open(Fi) as f:
+          
+            for li in f:
+                cell = li.strip('\n').split("\t")
+                q = protCDOne(
+                        protin_id =  cell[0],
+                        protin_nr =  NrInfo.objects.filter(protin_id = cell[0]).first(),
+                        cdd_nameCat =cell[1],
+                        cdd_idCat = cell[2]
+                )
+                info.append(q)
+                count +=1
+                if count > 100000:
+                    all += count
+                    print("now:", all,"add:",count)
+                    protCDOne.objects.bulk_create(info)
+                    count=0
+                    info=[]
+        if count >0:           
+            protCDOne.objects.bulk_create(info)
+        print(all + count)
 
     def protCDncbi(self, Fi="/dat1/dat/db/nr/CD/tmp/blast.tsv"):
         from protein.models import protCDncbi, NrInfo
@@ -265,7 +329,7 @@ class RUN:
         from protein.models import CDD
         cdd = CDD.objects.all()
         with open(Fi) as f:
-            next(f)
+           
             for li in f:
                 cell = li.strip('\n').split("\t")
                 if cell[3]:
@@ -303,7 +367,7 @@ class RUN:
         # [query, length, desc, pssm, start, end, evalue,
         #                           biscore, cdd_id, cdd_name, cdd_name_cat, cdd_note_cat
         with open(Fi) as f:
-            next(f)
+           
             for li in f:
                 cell = li.strip('\n').split("\t")
                 q = protCDncbiOne(

@@ -95,6 +95,14 @@ class protCD(models.Model):
     def __str__(self):
         return self.protin_id + "\t" + self.cdd_name
 
+class protCDOne(models.Model):
+    protin_id = models.CharField(max_length=200, db_index=True)
+    protin_nr =  models.ForeignKey(NrInfo, related_name= "nrinfo_protCDOne", on_delete=models.CASCADE)
+    cdd_nameCat = models.TextField( )
+    cdd_idCat = models.TextField(  )
+    def __str__(self):
+        return self.protin_id + "\t" + self.cdd_nameCat
+
 class protCDncbi(models.Model):
     # 放cdd ncbi
     cdd_id = models.ForeignKey(CDD, related_name= "cdd_protCDncbi", on_delete=models.CASCADE)
@@ -109,6 +117,7 @@ class protCDncbi(models.Model):
    
     def __str__(self):
         return self.protin_id + "\t" + self.cdd_name
+        
 class protCDncbiOne(models.Model):
     protin_id = models.CharField(max_length=200, db_index=True)
     protin_nr =  models.ForeignKey(NrInfo, related_name= "nrinfo_protCDncbiOne", on_delete=models.CASCADE)
