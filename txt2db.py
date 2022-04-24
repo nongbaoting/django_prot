@@ -7,7 +7,7 @@
 # @Version         : 1.0.0
 # @Description     : 
 
-from operator import imod
+
 import django
 import os
 import sys
@@ -297,7 +297,6 @@ class RUN:
         # [query, length, desc, pssm, start, end, evalue,
         #                           biscore, cdd_id, cdd_name, cdd_name_cat, cdd_note_cat
         with open(Fi) as f:
-          
             for li in f:
                 cell = li.strip('\n').split("\t")
                 q = protCDOne(
@@ -318,7 +317,7 @@ class RUN:
             protCDOne.objects.bulk_create(info)
         print(all + count)
 
-    def protCDncbi(self, Fi="/dat1/dat/db/nr/CD/tmp/blast.tsv"):
+    def protCDncbi(self, Fi="/dat1/dat/db/nr/CD/ncbi/format/head.txt"):
         from protein.models import protCDncbi, NrInfo
         # all = protCDncbi.objects.all().delete() 
         info = []
@@ -329,7 +328,6 @@ class RUN:
         from protein.models import CDD
         cdd = CDD.objects.all()
         with open(Fi) as f:
-           
             for li in f:
                 cell = li.strip('\n').split("\t")
                 if cell[3]:
