@@ -60,7 +60,11 @@ def search(request):
             prot_lenMin = int(body['target_len']['min'])
         
             prot_lenMax = int(body['target_len']['max'])
-            querySet = protCDncbi.objects.all().filter(length__gt = prot_lenMin, length__lt=prot_lenMax)
+            anno_source = body['anno_source']
+            if anno_source == 'all':
+                querySet = protCD.objects.all().filter(length__gt = prot_lenMin, length__lt=prot_lenMax)
+            elif anno_source == 'ncbi':
+                querySet = protCDncbi.objects.all().filter(length__gt = prot_lenMin, length__lt=prot_lenMax)
             
             domains_keep = slim_domain(body['domains'])
             q_candidate,q_exclude = [],[]
@@ -115,10 +119,13 @@ def search(request):
             print("filter ok region:", querySet.count())
             print("filter ok, protin_id:",querySet.values('protin_id').distinct().count())
             # querySet = querySet.exclude(protin_id__in=id_exclude)
-            newQ= []
+            newQ= querySet.order_by('length').values_list('protin_id', flat=True).distinct()
             
             print("query protCDncbiOne")
-            newQ = protCDncbiOne.objects.filter(protin_id__in = querySet.values('protin_id').distinct() )
+            # if anno_source == "all":
+            #     newQ = protCDOne.objects.filter(protin_id__in = querySet.values('protin_id').distinct() )
+            # elif anno_source == "ncbi":
+            #     newQ = protCDncbiOne.objects.filter(protin_id__in = querySet.values('protin_id').distinct() )
             # save cache
             print("save cache")
             # cache.clear()
@@ -136,19 +143,24 @@ def search(request):
         requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
         content = []
         for q in requestData:
-            cdd_notes, cdd_names = [],[]
-            cdd_ids = q.cdd_idCat.split(', ')
-            cdd_locs= []
-            protin = NrInfo.objects.filter(protin_id = q.protin_id).first()
-            regions = protCDncbi.objects.filter(protin_id = q.protin_id)
+            protin_id = q
+            print("protein_id",protin_id)
+            cdd_locs, cdd_ids,cdd_notes, cdd_names = [],[],[],[]
+            protin = NrInfo.objects.filter(protin_id = protin_id).first()
+            print
+            if anno_source == "all":
+                regions = protCD.objects.filter(protin_id = protin_id)
+            elif anno_source == "ncbi":
+                regions = protCDncbi.objects.filter(protin_id = protin_id)
             for qr in regions:
                 qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
+                cdd_ids.append(qr.cdd_id_id)
                 cdd_notes.append(qcd.cdd_desc)
                 cdd_names.append(qcd.cdd_name)
                 cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
             # cdd_notes = '^^'.join(cdd_notes)
             items = {
-                "protin_id":q.protin_id,
+                "protin_id":protin_id,
                 "length": protin.length,
                 "cdd_names": cdd_names,
                 "cdd_notes":cdd_notes,
@@ -189,6 +201,7 @@ def pages(request):
             currentPage = int(request.GET.get('currentPage'))
             order =request.GET.get('order')
             field = request.GET.get('field')
+            anno_source = request.GET.get('anno_source')
             #  order
             myuuid_order = this_uuid + f'{order}.{field}'
             print("order field", order, field)
@@ -196,19 +209,22 @@ def pages(request):
             requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
             content = []
             for q in requestData:
-                cdd_notes, cdd_names = [],[]
-                cdd_ids = q.cdd_idCat.split(', ')
-                cdd_locs= []
-                protin = NrInfo.objects.filter(protin_id = q.protin_id).first()
-                regions = protCDncbi.objects.filter(protin_id = q.protin_id)
+                protin_id = q
+                cdd_locs, cdd_ids,cdd_notes, cdd_names = [],[],[],[]
+                protin = NrInfo.objects.filter(protin_id = protin_id).first()
+                if anno_source == "all":
+                    regions = protCD.objects.filter(protin_id = protin_id)
+                elif anno_source == "ncbi":
+                    regions = protCDncbi.objects.filter(protin_id = protin_id)
                 for qr in regions:
                     qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
+                    cdd_ids.append( qr.cdd_id_id)
                     cdd_notes.append(qcd.cdd_desc)
                     cdd_names.append(qcd.cdd_name)
                     cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
                 # cdd_notes = '^^'.join(cdd_notes)
                 items = {
-                    "protin_id":q.protin_id,
+                    "protin_id":protin_id,
                     "length": protin.length,
                     "cdd_names": cdd_names,
                     "cdd_notes":cdd_notes,
@@ -224,6 +240,7 @@ def pages(request):
             return JsonResponse(data )
 
 ## 逻辑
+
 def slim_domain(domains):
     new = []
     for dm in domains:

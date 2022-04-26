@@ -48,6 +48,7 @@ def retrieve_save(request):
             order = request.GET.get('order')
             field = request.GET.get('field')
             isSort = request.GET.get('isSort')
+            anno_source = request.GET.get('anno_source')
             if isSort=="Yes":
                 print("order field", order, field)
                 field_dt = {
@@ -61,7 +62,7 @@ def retrieve_save(request):
                     newQ = sorted(newQ, key=lambda k: k[field_num])
                 saveCddDict[this_uuid] = newQ
 
-            content = get_one_page(newQ,currentPage, pageSize)
+            content = get_one_page(newQ,currentPage, pageSize,anno_source)
             data["data"] =  content
             data['totalCount'] = count
             data['uuid'] =  this_uuid
@@ -76,6 +77,7 @@ def filter_cdd_save(request):
     newQ = load_cdd_data(param['uuid'])
     target_len_min= float(param['target_len']['min'])
     target_len_max= float(param['target_len']['max'])
+    anno_source = param['anno_source']
     print( target_len_max )
     
     print(param)
@@ -112,7 +114,7 @@ def filter_cdd_save(request):
                 dt.append(mydt) 
     this_uuid = str(uuid.uuid4())
     saveCddDict[this_uuid] = dt
-    content = get_one_page(dt,1, 10)
+    content = get_one_page(dt,1, 10,anno_source)
     data = {}
     data["data"] =  content
     data['totalCount'] = len(dt)
@@ -148,20 +150,23 @@ def load_cdd_data(this_uuid):
             print("keys number: ", len( saveCddDict.keys() ) )
     return newQ
 
-def get_one_page(newQ, currentPage,pageSize):
+def get_one_page(newQ, currentPage,pageSize,anno_source):
     requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
     content = []
     # cddall = CDD.objects.all()
     for q in requestData:
-        # q: protin_id, desc, length
-        cdd_notes, cdd_names = [],[]
-        cdd_ids = []
-        cdd_locs= []
+        print(q)
         protin_id = q[0]
-        protin = NrInfo.objects.filter(protin_id =  protin_id).first()
-        regions = protCDncbi.objects.filter(protin_id =  protin_id)
+        cdd_locs, cdd_ids,cdd_notes, cdd_names = [],[],[],[]
+        protin = NrInfo.objects.filter(protin_id = protin_id).first()
+        regions = []
+        if anno_source == "all":
+            regions = protCD.objects.filter(protin_id = protin_id)
+        elif anno_source == "ncbi":
+            regions = protCDncbi.objects.filter(protin_id = protin_id)
         for qr in regions:
             qcd = CDD.objects.get(cdd_id = qr.cdd_id_id)
+            cdd_ids.append( qr.cdd_id_id)
             cdd_notes.append(qcd.cdd_desc)
             cdd_names.append(qcd.cdd_name)
             cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
