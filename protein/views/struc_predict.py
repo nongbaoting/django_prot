@@ -75,7 +75,7 @@ def struc_template(request):
         groups = re_template.findall(logs)
         print(groups)
         data = {
-            'templates':sorted(groups)
+            'templates': groups
         }
         return JsonResponse(data)
 
