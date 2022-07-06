@@ -1,21 +1,24 @@
 
-# django-admin startproject mysite
+# 创建
+django-admin startproject mysite
 
 # 创建应用
-# python manage.py startapp protein
+python manage.py startapp protein
 
 # 应用数据库
-# del 
-from protein.models import *; all = SubmitInfoNew.objects.all() ;  all.delete()
-all = SubmitInfo.objects.all()
-all.delete()
-
-# 更改
+## 更改
 python manage.py makemigrations protein
 python manage.py migrate
 
 python txt2db.py geneinfo  ../django_21/sprot_info.txt
 python txt2db.py Structure ../django_21/sprot_file_relate.txt
+
+## del 
+from protein.models import *; all = SubmitInfoNew.objects.all() ;  all.delete()
+all = SubmitInfo.objects.all()
+all.delete()
+
+
 
 # 启用服务
 pip install livereload -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com

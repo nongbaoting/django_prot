@@ -37,13 +37,16 @@ class MyHandler(FileSystemEventHandler):
             # completed_date = datetime.datetime.now()
             # run.stat(run.pre, running_date, completed_date)
 
+
 def myconverter(o):
     if isinstance(o, datetime.datetime):
         return o.__str__()
 
+
 uploads_47 = "/training/nong/web/data/uploads/"
 web_base = '/training/nong/protein/db/web/outputs/results/'
 res_base = '/training/nong/protein/res/'
+
 
 class RUN:
     def stat(self, job_name, run_date, completed_date, statFi="/training/nong/web/prot/protein/static/stats/structure.json"):
@@ -81,8 +84,9 @@ class RUN:
                 f'cd {res_root}; tar -czvf {pre}_alphafold.tar.gz {pre}/rank*pdb unrelaxed_model_1.pdb')
             os.system(f'mkdir -p {web_dir}/{pre}')
             os.system(f'cp {res_root}/{pre}_alphafold.tar.gz {web_dir}')
-            
-            os.system(f"cp -r {res_dir}/rank*pdb  unrelaxed_model_1.pdb {web_dir}/{pre}")
+
+            os.system(
+                f"cp -r {res_dir}/rank*pdb  unrelaxed_model_1.pdb {web_dir}/{pre}")
         self.alphafold2_code = run.returncode
 
     def roseTTAFold(self, faFile, mode="pyrosetta"):
@@ -158,13 +162,13 @@ class RUN:
                     print(
                         self.pre, "RoseTTAFold success! =================================>", timezone.now())
             django.db.close_old_connections()
-            obj =  SubmitInfo.objects.filter(job_name=self.pre).first()
+            obj = SubmitInfo.objects.filter(job_name=self.pre).first()
             obj.run_status = ','.join(status)
             obj.completed_date = timezone.now()
             obj.save()
         django.db.close_old_connections()
 
-    def watchdog(self, mypath= uploads_47 + 'structure_predict'):
+    def watchdog(self, mypath=uploads_47 + 'structure_predict'):
         event_handler = MyHandler()
         observer = Observer()
         observer.schedule(event_handler, mypath, recursive=True)
@@ -179,9 +183,9 @@ class RUN:
         observer.join()
 
     def watch_blast(self):
-        from myscripts  import run_blast
+        from myscripts import run_blast
         run_blast.watch_dog()
-        
+
 
 if __name__ == "__main__":
 

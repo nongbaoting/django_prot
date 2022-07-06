@@ -33,8 +33,9 @@ ALLOWED_HOSTS = ['127.0.0.1', '222.200.186.47', '222.200.186.47:9111', '222.200.
 # Application definition
 # add
 INSTALLED_APPS = [
-    
+
     'django_celery_results',
+    'crispr.apps.CrisprConfig',
     'protein.apps.ProteinConfig',
     'polls.apps.PollsConfig',
     'livereload',
@@ -117,9 +118,9 @@ WSGI_APPLICATION = 'django_prot.wsgi.application'
 #     #     "PORT": "3306",
 #     # },
 # }
- 
+
 DATABASES = {
-     'default': {
+    'default': {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "nongbt_db",
         "USER": "nongbt",
@@ -127,12 +128,12 @@ DATABASES = {
         "HOST": "222.200.186.47",
         "PORT": "3306",
         # 'OPTIONS': {
-            
+
         #     'charset': 'utf8',
         #     'collation': 'utf8_bin',
         # },
-     }
- }
+    }
+}
 
 
 # Password validation
@@ -198,7 +199,7 @@ CACHES = {
 #             'CULL_FREQUENCY': 2, #缓存条数达到最大值时，删除1/x的缓存数据
 #         }
 #     }
-    
+
 # }
 
 

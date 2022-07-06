@@ -1,4 +1,3 @@
-from operator import imod
 from django.urls import path
 from .views import struc_similarity
 from .views import struc_predict
@@ -10,8 +9,8 @@ from .views import jobQueue
 
 app_name = 'protein'
 urlpatterns = [
-    path('login',login.login ),
-    
+    path('login', login.login),
+
     # Structure predict
     path('get_token', struc_predict.get_token, name="get_token"),
     path('', struc_predict.index, name='index'),
@@ -23,9 +22,10 @@ urlpatterns = [
     path('predict/structure/check/', struc_predict.check_proj, name="check_proj"),
     path('api/structure/queue/', struc_predict.struc_queue, name='struc_queue'),
     path('api/structure/search/', struc_predict.struc_search, name='struc_search'),
-    path("api/structure/getFile/", struc_predict.struc_getFile, name='struct_getFile'),
+    path("api/structure/getFile/",
+         struc_predict.struc_getFile, name='struct_getFile'),
     path("api/structure/getTemplate/", struc_predict.struc_template),
-    
+
     # search
     path('search/', struc_predict.search, name="search"),
     path("test/", struc_predict.test, name="test"),
@@ -33,8 +33,8 @@ urlpatterns = [
     #path("show_structure/<str:str_id>/", views.show_structure, name="show_str_detail")
 
     # Structure similarity
-    path("api/similarity/upload_pdb/", struc_similarity.upload_pdb), 
-    path("api/similarity/DUF_SPalign/", struc_similarity.DUF_SPalign), 
+    path("api/similarity/upload_pdb/", struc_similarity.upload_pdb),
+    path("api/similarity/DUF_SPalign/", struc_similarity.DUF_SPalign),
     path("api/similarity/results/", struc_similarity.results),
     path("api/similarity/getOneItem/", struc_similarity.getOneItem),
 
@@ -43,19 +43,19 @@ urlpatterns = [
     path("api/blast/res/blast_jackhmmer/", blast.res_blast_jackhmmer),
     path("api/blast/queue/", blast.queue),
     path("api/blast/queue/search/", blast.search),
-    
-    # cdd 
+
+    # cdd
     path("api/cdd/search/", cdd.search),
     path("api/cdd/search/page/", cdd.pages),
     path("api/cdd/search/get_all_protin_ids/", cdd.get_all_protin_id),
-    path("api/cdd/search_save/", cdd_search.search_save), 
-    path("api/cdd/retrieve_save/", cdd_search.retrieve_save), 
-    path("api/cdd/filter_cdd_save/", cdd_search.filter_cdd_save), 
-    
-    #phylogenectics
-     path("api/phylo/run/", phylogenetic.run_phylo),
-     path("api/phylo/get_fasta/", phylogenetic.get_fasta),
-     path("api/phylo/tree_files/", phylogenetic.tree_files), 
-     #queue
-     path('api/Queue/', jobQueue.jobTable),
+    path("api/cdd/search_save/", cdd_search.search_save),
+    path("api/cdd/retrieve_save/", cdd_search.retrieve_save),
+    path("api/cdd/filter_cdd_save/", cdd_search.filter_cdd_save),
+
+    # phylogenectics
+    path("api/phylo/run/", phylogenetic.run_phylo),
+    path("api/phylo/get_fasta/", phylogenetic.get_fasta),
+    path("api/phylo/tree_files/", phylogenetic.tree_files),
+    # queue
+    path('api/Queue/', jobQueue.jobTable),
 ]
