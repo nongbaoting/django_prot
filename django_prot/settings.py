@@ -78,7 +78,6 @@ CORS_ORIGIN_WHITELIST = [
 # 允许跨域使用 cookie
 CORS_ALLOW_CREDENTIALS = True
 
-
 ROOT_URLCONF = 'django_prot.urls'
 CSRF_COOKIE_NAME = "XSRF-TOKEN"
 
