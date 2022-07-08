@@ -1,9 +1,10 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 
 from crispr.models import CASInfo
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from os import path
+import os
 
 
 def browse(request):
@@ -38,3 +39,18 @@ def browse(request):
     content = {"totalCount": totalCount,
                "data": data}
     return JsonResponse(content)
+
+
+def struc_getFile(request):
+    struc_result_dir = "/training/nong/protein/work/cas9_ColabFold/colabFoldPdb"
+    if request.method == "GET":
+        filename = request.GET.get('filename') + '-cf.pdb'
+        filePath = os.path.join(struc_result_dir, filename)
+        print(filePath)
+        if os.path.exists(filePath):
+            print("file ok: ", filePath)
+            fo = open(filePath, 'rb')
+            return FileResponse(fo)
+        else:
+            print("not found: ", filePath)
+            raise Http404
