@@ -484,6 +484,7 @@ class RUN:
                 dt_json = json.dumps(data)
                 json.dump(dt_json, fo)
         fo_l.close()
+    # cripsr -------------------------------------------
 
     def CASInfo(self, cas_class, Fi="/dat1/dat/db/uniprot/subset/cas9.txt"):
         from crispr.models import CASInfo
