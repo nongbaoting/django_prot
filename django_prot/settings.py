@@ -27,7 +27,7 @@ SECRET_KEY = '1x^q9bu8+u6g9hr&q)y8ky*)0j$%=3my0zx-4ivz(=o^3-&a2w'
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '222.200.186.47', '222.200.186.47:9111', '222.200.186.47:9112',
-                 '222.200.186.47:8080', '::1', 'localhost', '*']
+                 '222.200.186.47:8080', '::1', 'localhost', '*', ]
 
 
 # Application definition
@@ -56,7 +56,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Django 解决跨域访问API失败问题
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware', # 不同主机开发，临时注释掉。发布版本要使用
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # 不同主机开发，临时注释掉。发布版本要使用
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -175,7 +175,7 @@ STATIC_URL = '/protein/static/'
 
 
 STATICFILES_DIRS = [
-    # os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "static"),
     '/training/nong/protein/db/web',
 ]
 

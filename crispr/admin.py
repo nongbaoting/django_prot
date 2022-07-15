@@ -4,3 +4,5 @@ from django.contrib import admin
 from .models import *
 
 admin.site.register(CASInfo)
+admin.site.register(AlignSPScore)
+admin.site.register(AlignTMScore)

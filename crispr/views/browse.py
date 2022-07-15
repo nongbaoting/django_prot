@@ -1,6 +1,6 @@
 from django.http import JsonResponse, FileResponse, Http404
 
-from crispr.models import CASInfo
+from crispr.models import CASInfo, AlignSPScore, AlignTMScore
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from os import path
@@ -54,3 +54,29 @@ def struc_getFile(request):
         else:
             print("not found: ", filePath)
             raise Http404
+
+
+def alignTMscore(request):
+    objs = AlignTMScore.objects.all()
+    totalCount = objs.count()
+    # 分页
+    pageSize = int(request.GET.get('pageSize'))
+    currentPage = int(request.GET.get('currentPage'))
+    requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
+    data = serializers.serialize('json', requestData)
+    content = {"totalCount": totalCount,
+               "data": data}
+    return JsonResponse(content)
+
+
+def alignSPscore(request):
+    objs = AlignSPScore.objects.all()
+    totalCount = objs.count()
+    # 分页
+    pageSize = int(request.GET.get('pageSize'))
+    currentPage = int(request.GET.get('currentPage'))
+    requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
+    data = serializers.serialize('json', requestData)
+    content = {"totalCount": totalCount,
+               "data": data}
+    return JsonResponse(content)
