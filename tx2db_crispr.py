@@ -80,9 +80,9 @@ class Main:
                     cov_1=float(cell[5]),
                     cov_2=float(cell[6]),
                     RMSD=float(cell[7]),
-                    seq_ID=float(cell[8]),
-                    TMscore_1=float(cell[9]),
-                    TMscore_2=float(cell[10]),
+                    seq_ID=round(float(cell[8]), 2),
+                    TMscore_1=round(float(cell[9]), 2),
+                    TMscore_2=round(float(cell[10]), 2),
                     d0_1=float(cell[11]),
                     d0_2=float(cell[12]),
                 )
@@ -100,7 +100,8 @@ class Main:
 
     def AlignSPScore(self, tool, Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalignNS/colabFoldPdb.SPalignNS_out.txt"):
         '''
-        python tx2db_crispr.py AlignSPScore SPalignNS 
+        python tx2db_crispr.py AlignSPScore SPalignNS
+        python tx2db_crispr.py  AlignSPScore SPalign /dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalign/colabFoldPdb.SPalign_out.txt
         '''
         from crispr.models import AlignSPScore
         # AlignSPScore.objects.all().delete()

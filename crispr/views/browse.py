@@ -5,6 +5,7 @@ from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from os import path
 import os
+import re
 
 
 def browse(request):
@@ -41,6 +42,9 @@ def browse(request):
     return JsonResponse(content)
 
 
+re_field = re.compile(r'fields.')
+
+
 def struc_getFile(request):
     struc_result_dir = "/training/nong/protein/work/cas9_ColabFold/colabFoldPdb"
     if request.method == "GET":
@@ -57,11 +61,19 @@ def struc_getFile(request):
 
 
 def alignTMscore(request):
-    objs = AlignTMScore.objects.all()
-    totalCount = objs.count()
+
     # 分页
     pageSize = int(request.GET.get('pageSize'))
     currentPage = int(request.GET.get('currentPage'))
+    field = '-chain2_len'
+    if request.GET.get("field"):
+        print(request.GET.get('field'))
+        field = re_field.sub('', request.GET.get("field"))
+        print("field:", field)
+        if request.GET.get("order") == "descending":
+            field = '-' + field
+    objs = AlignTMScore.objects.all().order_by(field)
+    totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
@@ -70,11 +82,19 @@ def alignTMscore(request):
 
 
 def alignSPscore(request):
-    objs = AlignSPScore.objects.all()
-    totalCount = objs.count()
     # 分页
     pageSize = int(request.GET.get('pageSize'))
     currentPage = int(request.GET.get('currentPage'))
+    tool = request.GET.get('tool')
+    field = '-chain2_len'
+    if request.GET.get("field"):
+        print(request.GET.get('field'))
+        field = re_field.sub('', request.GET.get("field"))
+        print("field:", field)
+        if request.GET.get("order") == "descending":
+            field = '-' + field
+    objs = AlignSPScore.objects.all().filter(tool=tool).order_by(field)
+    totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
