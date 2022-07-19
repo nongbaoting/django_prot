@@ -72,7 +72,7 @@ def alignTMscore(request):
         print("field:", field)
         if request.GET.get("order") == "descending":
             field = '-' + field
-    objs = AlignTMScore.objects.all().order_by(field)
+    objs = AlignTMScore.objects.all().filter(chain2_len__gt=500).order_by(field)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)
@@ -93,7 +93,8 @@ def alignSPscore(request):
         print("field:", field)
         if request.GET.get("order") == "descending":
             field = '-' + field
-    objs = AlignSPScore.objects.all().filter(tool=tool).order_by(field)
+    objs = AlignSPScore.objects.all().filter(
+        tool=tool).all().filter(chain2_len__gt=500, SPb__gt=0.5).order_by(field)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)
