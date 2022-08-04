@@ -98,17 +98,19 @@ class Main:
             AlignTMScore.objects.bulk_create(info)
         print(all + count)
 
-    def AlignSPScore(self, tool, Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalignNS/colabFoldPdb.SPalignNS_out.txt"):
+    def AlignSPScore(self, tool, delete, Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalignNS/colabFoldPdb.SPalignNS_out.txt"):
         '''
-        python tx2db_crispr.py AlignSPScore SPalignNS
-        python tx2db_crispr.py  AlignSPScore SPalign /dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalign/colabFoldPdb.SPalign_out.txt
+        python tx2db_crispr.py AlignSPScore SPalignNS yes
+        python tx2db_crispr.py  AlignSPScore SPalign no /dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalign/colabFoldPdb.SPalign_out.txt
         '''
         from crispr.models import AlignSPScore
-        # AlignSPScore.objects.all().delete()
+        if delete == 'yes':
+            AlignSPScore.objects.all().delete()
         info = []
         count, all = 0, 0
         with open(Fi) as f:
-            next(f)
+            headers = next(f).strip().split('\t')
+            seqid_idx = headers.index("SEQID")
             for li in f:
                 cell = li.rstrip('\n').split("\t")
                 q = AlignSPScore(
@@ -122,6 +124,7 @@ class Main:
                     tool=tool,
                     eff_len=int(cell[7]),
                     RMSD=float(cell[8]),
+                    seq_ID=float(cell[seqid_idx]),
                 )
                 info.append(q)
                 count += 1

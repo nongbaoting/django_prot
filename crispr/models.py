@@ -47,3 +47,4 @@ class AlignSPScore(models.Model):
     SPa = models.FloatField()
     SPb = models.FloatField()
     seq_ID = models.FloatField(null=True)
+    

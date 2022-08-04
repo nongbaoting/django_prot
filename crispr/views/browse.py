@@ -61,6 +61,13 @@ def struc_getFile(request):
             raise Http404
 
 
+cas9Dt = {
+    'spCas9-3': '4un3',
+    'cjCas9-3': '5x2g',
+    'Nme1Cas9-3': '6jdv'
+}
+
+
 def alignTMscore(request):
 
     # 分页
@@ -75,9 +82,11 @@ def alignTMscore(request):
             field = '-' + field
 
     filters = json.loads(request.GET.get('filters'))
-    objs = AlignTMScore.objects.all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'],
-                                             seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']
-                                             ).order_by(field)
+    objs = AlignTMScore.objects.all().filter(
+        chain1=cas9Dt[filters['protein']],
+        chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'],
+        seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']
+    ).order_by(field)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)
@@ -101,6 +110,7 @@ def alignSPscore(request):
         if request.GET.get("order") == "descending":
             field = '-' + field
     objs = AlignSPScore.objects.all().filter(
+        chain1=cas9Dt[filters['protein']],
         tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], SPb__gt=0.5).order_by(field)
     totalCount = objs.count()
     print('-----------', totalCount)
