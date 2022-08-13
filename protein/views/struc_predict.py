@@ -1,5 +1,6 @@
 from opcode import opname
-import re,os
+import re
+import os
 import time
 import json
 from protein.models import *
@@ -24,15 +25,18 @@ uploads_47_struct = "/training/nong/web/data/uploads/structure_predict/"
 
 # struc_result_dir = "/training/nong/protein/db/web/outputs/results/"
 struc_result_dir = "/training/nong/protein/res/"
+
+
 def struc_getFile(request):
     if request.method == "GET":
         filetype = request.GET.get('filetype')
-        program  = request.GET.get('program')
+        program = request.GET.get('program')
         job_name = request.GET.get('job_name')
         filename = request.GET.get('filename')
         # TODO新版 job_name 改为uuid
         if filetype == "file":
-            filePath = os.path.join(struc_result_dir, program,  job_name, filename)
+            filePath = os.path.join(
+                struc_result_dir, program,  job_name, filename)
         if filetype == "tar":
             filePath = os.path.join(struc_result_dir, program, filename)
         if os.path.exists(filePath):
@@ -42,6 +46,7 @@ def struc_getFile(request):
         else:
             print("not found: ", filePath)
             raise Http404
+
 
 def struc_search(request):
     searchType = request.GET.get('searchType')
@@ -65,19 +70,31 @@ def struc_search(request):
     data = serializers.serialize('json', queryset)
     return JsonResponse(data, safe=False)
 
-re_template = re.compile(r'Found an exact template match (?P<templae>\w+).$',re.MULTILINE)
+
+re_template = re.compile(
+    r'Found an exact template match (?P<templae>\w+).$', re.MULTILINE)
+
+
 def struc_template(request):
+
     if request.method == "GET":
         job_name = request.GET.get("job_name")
-        program  = request.GET.get('program')
-        run_log =  os.path.join(struc_result_dir, program,  job_name, 'run_err.log')
+        program = request.GET.get('program')
+        run_log = os.path.join(struc_result_dir, program,
+                               job_name, 'run_err.log')
         logs = open(run_log).read()
         groups = re_template.findall(logs)
+        al_template = []
+        for g in groups:
+            pdbid, train = g.split('_')
+            compond = PDBentry.objects.get(IDCODE=pdbid).COMPOUND
+            al_template.append([pdbid, train, compond])
         print(groups)
         data = {
-            'templates': groups
+            'templates': al_template
         }
         return JsonResponse(data)
+
 
 def struc_queue(request):
     queryset = SubmitInfo.objects.all().order_by('-upload_date')
@@ -146,6 +163,8 @@ def check_proj(request):
     return JsonResponse(data)
 
 # search
+
+
 def search(request):
     if 'gene' in request.GET:
         # 用不上
@@ -191,13 +210,16 @@ def show_structure(request):
 def get_token(request):
     token = csrf.get_token(request)
 
+
 def index(request):
     context = {'hello': 'hello'}
     return render(request, 'protein/index.html', context)
 
+
 def alphafold2(request):
     context = {'hello': 'hello'}
     return render(request, 'protein/predict/structure_predict.html', context)
+
 
 def structure_result(request):
     context = {'hello': 'hello'}

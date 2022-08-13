@@ -47,4 +47,17 @@ class AlignSPScore(models.Model):
     SPa = models.FloatField()
     SPb = models.FloatField()
     seq_ID = models.FloatField(null=True)
-    
+
+
+class AlignFatcatScore(models.Model):
+    chain1 = models.CharField(max_length=200, db_index=True)
+    chain2_acc = models.CharField(max_length=200, db_index=True)
+    chain1_len = models.IntegerField()
+    chain2_len = models.IntegerField()
+    cov1 = models.FloatField()
+    cov2 = models.FloatField()
+    seq_ID = models.FloatField()
+    similar = models.FloatField()
+    alignScore = models.FloatField()
+    tmScore = models.FloatField()
+    RMSD = models.FloatField()

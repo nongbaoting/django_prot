@@ -138,6 +138,45 @@ class Main:
             AlignSPScore.objects.bulk_create(info)
         print(all + count)
 
+    def AlignFatcatScore(self, tool, delete,
+                         Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalignNS/colabFoldPdb.SPalignNS_out.txt"):
+        '''
+        python tx2db_crispr.py AlignFatcatScore
+        '''
+        from crispr.models import AlignFatcatScore
+        AlignFatcatScore.objects.all().delete()
+        info = []
+        count, all = 0, 0
+        with open(Fi) as f:
+            headers = next(f).strip().split('\t')
+
+            for li in f:
+                cell = li.rstrip('\n').split("\t")
+                q = AlignFatcatScore(
+                    chain1=cell[0],
+                    chain2_acc=cell[1],
+                    chain1_len=cell[2],
+                    chain2_len=cell[3],
+                    cov1=cell[4],
+                    cov2=cell[5],
+                    seq_ID=cell[6],
+                    similar=cell[7],
+                    alignScore=cell[7],
+                    tmScore=cell[9],
+                    RMSD=cell[10],
+                )
+                info.append(q)
+                count += 1
+                if count > 100000:
+                    all += count
+                    print("now:", all, "add:", count)
+                    AlignFatcatScore.objects.bulk_create(info)
+                    count = 0
+                    info = []
+        if count > 0:
+            AlignFatcatScore.objects.bulk_create(info)
+        print(all + count)
+
 
 if __name__ == '__main__':
     fire.Fire(Main)

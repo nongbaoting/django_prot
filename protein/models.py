@@ -1,3 +1,4 @@
+from email.header import Header
 from unittest import result
 from django.db import models
 from django.utils import timezone
@@ -172,6 +173,17 @@ class ScopeCla(models.Model):
     fold = models.CharField(max_length=200, db_index=True)
     superfamily = models.CharField(max_length=200, db_index=True)
     family = models.CharField(max_length=200, db_index=True)
+
+
+class PDBentry(models.Model):
+    IDCODE = models.CharField(max_length=20)
+    HEADER = models.CharField(max_length=200)
+    ACCESSION_DATE = models.DateTimeField()
+    COMPOUND = models.CharField(max_length=500)
+    SOURCE = models.CharField(max_length=500)
+    AUTHOR_LIST = models.CharField(max_length=1000)
+    RESOLUTION = models.CharField(max_length=20)
+    EXPERIMENT_TYPE = models.CharField(max_length=100)
 
 
 # class NrCD(models.Model):

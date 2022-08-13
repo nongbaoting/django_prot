@@ -518,6 +518,39 @@ class RUN:
             CASInfo.objects.bulk_create(info)
         print(all + count)
 
+    def PDBentry(self, Fi="/dat1/nbt2/proj/21-prot/dat/pdb/derived_data/index/entries.idx"):
+        from protein.models import PDBentry
+        from datetime import datetime
+        PDBentry.objects.all().delete()
+        info = []
+        count, all = 0, 0
+        with open(Fi) as f:
+            next(f)
+            next(f)
+            for li in f:
+                cell = li.rstrip('\n').split("\t")
+                q = PDBentry(
+                    IDCODE=cell[0],
+                    HEADER=cell[1],
+                    ACCESSION_DATE=datetime.strptime(cell[2], "%M/%d/%y"),
+                    COMPOUND=cell[3],
+                    SOURCE=cell[4],
+                    AUTHOR_LIST=cell[5],
+                    RESOLUTION=cell[6],
+                    EXPERIMENT_TYPE=cell[7],
+                )
+                info.append(q)
+                count += 1
+                if count > 100000:
+                    all += count
+                    print("now:", all, "add:", count)
+                    PDBentry.objects.bulk_create(info)
+                    count = 0
+                    info = []
+        if count > 0:
+            PDBentry.objects.bulk_create(info)
+        print(all + count)
+
 
 if __name__ == '__main__':
     fire.Fire(RUN)
