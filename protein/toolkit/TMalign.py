@@ -18,6 +18,7 @@ from collections import defaultdict
 from protein.toolkit import myFunctions
 from protein.models import *
 
+
 def parse_TMalign(outLogs):
     re_pdb = re.compile(r'.pdb$|.pdb.gz$|.cif$|.cif.gz$')
     re_TMalign_sp = re.compile(r"TM-align \(Version")
@@ -63,14 +64,14 @@ def parse_TMalign(outLogs):
                m_score.group("d01"), m_score.group("d02"),
                m_align.group("seq_1"), m_align.group("pairwise"), m_align.group("seq_2")]
         lt_ = {
-            "chain_1": chain_1, "chain_2":chain_2,
-             "chain_1_len":  m_nameLen.group('chain_1_len'),  'chain_2_len': m_nameLen.group(
-                   'chain_2_len'), 'align_len': m_misc.group('align_len'), 
-                   "cov_1":cov_1, "cov_2": cov_2,
-               'RMSD':m_misc.group('RMSD'), 'Seq_ID': m_misc.group(
-                   'Seq_ID'), "tmscore_1": float(tmscore_1), "tmscore_2": float(tmscore_2),
-               "d01": m_score.group("d01"), "d02":m_score.group("d02"),
-               "seq_1": m_align.group("seq_1"), "pairwise": m_align.group("pairwise"), "seq_2": m_align.group("seq_2")
+            "chain_1": chain_1, "chain_2": chain_2,
+            "chain_1_len":  m_nameLen.group('chain_1_len'),  'chain_2_len': m_nameLen.group(
+                'chain_2_len'), 'align_len': m_misc.group('align_len'),
+            "cov_1": cov_1, "cov_2": cov_2,
+            'RMSD': m_misc.group('RMSD'), 'Seq_ID': m_misc.group(
+                'Seq_ID'), "tmscore_1": float(tmscore_1), "tmscore_2": float(tmscore_2),
+            "d01": m_score.group("d01"), "d02": m_score.group("d02"),
+            "seq_1": m_align.group("seq_1"), "pairwise": m_align.group("pairwise"), "seq_2": m_align.group("seq_2")
         }
         if float(tmscore_2) > 0:
             # print(lt_)
@@ -82,15 +83,17 @@ def parse_TMalign(outLogs):
 def scanAndFind_pattern(mydir, mypattern):
     wantFiles = []
     for entry in os.scandir(mydir):
-        if entry.is_file()  and mypattern.search(entry.name):
+        if entry.is_file() and mypattern.search(entry.name):
             wantFiles.append(entry)
         elif entry.is_dir():
             wantFiles.extend(scanAndFind_pattern(entry.path, mypattern))
     return wantFiles
 
+
 def run_cmd(cmd):
     run = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
     return run
+
 
 def parse_uniprot(Fi='/dat1/nbt2/proj/21-prot/alphafold/uniprot_info/uniprot-proteome_UP000005640.tab'):
     dt = defaultdict(list)
@@ -118,6 +121,7 @@ def parse_scope(Fi="/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt")
             dt[cell[0]] = cell
     return dt
 
+
 def item_add(item):
     pdb1 = item['chain_1']
     pdb2 = item['chain_2']
@@ -130,9 +134,9 @@ def item_add(item):
     item['chain_1_uniprot'] = pdb1_prot
 
     item['chain_2_scopeDomain'] = pdb2_domainID
-    item['chain_2_uniprot'] =  pdb2_prot
+    item['chain_2_uniprot'] = pdb2_prot
     item['chain_2_pdb'] = pdb2_pdbID
-    item[ 'chain_2_chain'] = chain
+    item['chain_2_chain'] = chain
 
     # domain_id = item['chain_2_scopeDomain']
     # obj = ScopeCla.objects.filter(domain = domain_id).first()
@@ -140,31 +144,47 @@ def item_add(item):
     # item['superfamily'] = obj.superfamily
     return item
 ###########################
+
+
 def one_to_one(pdb1, pdb2, tempDir, outFi_name):
     cmd = f'cd {tempDir}; TMalign {pdb1} {pdb2} -o {outFi_name}.sup'
     run = run_cmd(cmd)
-    outLogs  = run.stdout.decode('utf-8')
-    items =  parse_TMalign(outLogs)
+    outLogs = run.stdout.decode('utf-8')
+    items = parse_TMalign(outLogs)
     print(items)
     Oneitem = item_add(items[0])
     item_pickle = os.path.join(tempDir, outFi_name + '.pickle')
     myFunctions.pickle_dumpObj2file(Oneitem, item_pickle)
-    return  Oneitem 
+    return Oneitem
+
+
+def pair_align(pdb1, pdb2, tempDir, outFi_name):
+    cmd = f'cd {tempDir}; TMalign {pdb1} {pdb2} -o {outFi_name}.sup'
+    run = run_cmd(cmd)
+    outLogs = run.stdout.decode('utf-8')
+    items = parse_TMalign(outLogs)
+    print(items)
+    Oneitem = items[0]
+    item_pickle = os.path.join(tempDir, outFi_name + '.pickle')
+    myFunctions.pickle_dumpObj2file(Oneitem, item_pickle)
+    return Oneitem
+
 
 # scopeDomain_dir = "/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain"
 # scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/test"
 class TMalgin:
 
-    def __init__(self,params):
+    def __init__(self, params):
         self.dir_1 = params['dir_1']
         self.dir_2 = params['dir_2']
-        self.result_dir = myFunctions.create_tmpDir(params['struc_cpm_dir'], params['uuid'])
+        self.result_dir = myFunctions.create_tmpDir(
+            params['struc_cpm_dir'], params['uuid'])
         self.outFi = os.path.join(self.result_dir, params['outFi_name'])
 
-    def run(self,): 
+    def run(self,):
         self.dir_vs_dir(self.dir_1, self.dir_2)
         self.parseLogFile()
-        subprocess.run(f'cp  {self.dir_1}/* {self.result_dir}' , shell=True)
+        subprocess.run(f'cp  {self.dir_1}/* {self.result_dir}', shell=True)
         return self.outFi
 
     def dir_vs_dir(self, dir1, dir2, core=16):
@@ -191,7 +211,7 @@ class TMalgin:
 
     def parseLogFile(self, ):
         tmalign = parse_TMalign(self.outLogs)
-       
+
         heads = ['chain_1', 'chain_2', 'chain_1_len', 'chain_2_len', 'align_len', 'cov_1', 'cov_2',
                  'RMSD', 'Seq_ID', 'TMscore_1', 'TMscore_2', 'd0_1', 'd0_2',
                  'seq_1', 'pairwise', 'seq_2',
@@ -206,7 +226,6 @@ class TMalgin:
         res = sorted(arr, key=lambda k: float(k["tmscore_1"]), reverse=True)
         res = [k for k in res if float(k['tmscore_2'] > 0.3)]
         myFunctions.pickle_dump2file(res, self.outFi)
-      
 
 
 if __name__ == "__main__":

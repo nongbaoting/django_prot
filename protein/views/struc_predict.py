@@ -84,16 +84,18 @@ def struc_template(request):
                                job_name, 'run_err.log')
         logs = open(run_log).read()
         groups = re_template.findall(logs)
-        al_template = []
+        data = []
         for g in groups:
-            pdbid, train = g.split('_')
-            compond = PDBentry.objects.get(IDCODE=pdbid).COMPOUND
-            al_template.append([pdbid, train, compond])
-        print(groups)
-        data = {
-            'templates': al_template
-        }
-        return JsonResponse(data)
+            pdbid, chain = g.split('_')
+            pdbentry = PDBentry.objects.get(IDCODE=pdbid)
+            item = {
+                "CODEID": pdbentry.IDCODE,
+                "Chain":  chain,
+                "HEADER": pdbentry.HEADER,
+                "COMPOUND": pdbentry.COMPOUND
+            }
+            data.append(item)
+        return JsonResponse({"data": data})
 
 
 def struc_queue(request):

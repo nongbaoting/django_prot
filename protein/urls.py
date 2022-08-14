@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import struc_similarity
-from .views import struc_predict
+from .views import struc_predict, struc_align
 from .views import blast
 from .views import login
 from .views import cdd, cdd_search
@@ -37,6 +37,8 @@ urlpatterns = [
     path("api/similarity/DUF_SPalign/", struc_similarity.DUF_SPalign),
     path("api/similarity/results/", struc_similarity.results),
     path("api/similarity/getOneItem/", struc_similarity.getOneItem),
+    path("api/similarity/aligment/TMalign", struc_align.pair_TMalign),
+    path("api/similarity/aligment/SPalign", struc_align.pair_SPalign),
 
     # sequnce similarity
     path("api/blast/psijackhmmer/", blast.psijackhmmer),
