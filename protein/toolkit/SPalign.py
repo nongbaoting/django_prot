@@ -50,11 +50,11 @@ class SPalign:
             m_pos = reg_position.search(report)
             seq_1, seq_2, pairwise = m_pos.group('seq_1'), m_pos.group(
                 'seq_2'),  m_pos.group('pairwise')
-
+            pairwise = pairwise[5:]
             Pfold, SPe, SPa, SPb, eff_len = reg_pFold.search(report).groups()
             pdb1_len, pdb2_len = reg_len.search(report).groups()
             align4_len, ali_ident = calAlignIdent(
-                seq_1, seq_2, pairwise[5:])
+                seq_1, seq_2, pairwise)
             eff_ident = round(align4_len / float(eff_len), 2)
             RMSD = matchs.group('RMSD')
 
@@ -73,7 +73,10 @@ class SPalign:
                             m_pos.group('seq_1'), m_pos.group(
                                 'seq_2'),  m_pos.group('pairwise')
                             ]
-
+            seq_1_start = int(m_pos.group('source_start')) + 1
+            seq_2_start = int(m_pos.group('target_start')) + 1
+            seq_1_end = int(m_pos.group('source_end'))+1
+            seq_2_end = int(m_pos.group('target_end'))+1
             self.content = {
                 "input_pdb": pdb1,
                 "target_pdb": pdb2,
@@ -85,7 +88,13 @@ class SPalign:
                 "eff_len": eff_len,
                 'ali_ident': ali_ident,
                 "eff_ident": eff_ident,
-                "seq_1": seq_1, "seq_2": seq_2, "pairwise": pairwise,
+                "seq_1": f"{seq_1_start:<5}{seq_1} {seq_1_end}",
+                "seq_2": f"{seq_2_start:<5}{seq_2} {seq_2_end}",
+                "pairwise": " " * 5 + pairwise,
+                "seq_1_start": seq_1_start,
+                "seq_1_end": seq_1_end,
+                "seq_2_start": seq_2_start,
+                "seq_2_end": seq_2_end,
                 "RMSD": RMSD
             }
 

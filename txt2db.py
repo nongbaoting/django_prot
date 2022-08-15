@@ -519,6 +519,7 @@ class RUN:
         print(all + count)
 
     def PDBentry(self, Fi="/dat1/nbt2/proj/21-prot/dat/pdb/derived_data/index/entries.idx"):
+        " objs = AlignFatcatScore.objects.all() "
         from protein.models import PDBentry
         from datetime import datetime
         PDBentry.objects.all().delete()

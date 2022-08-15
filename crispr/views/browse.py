@@ -1,7 +1,7 @@
 import json
 from django.http import JsonResponse, FileResponse, Http404
 
-from crispr.models import CASInfo, AlignSPScore, AlignTMScore
+from crispr.models import *
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from os import path
@@ -113,6 +113,36 @@ def alignSPscore(request):
         chain1=cas9Dt[filters['protein']],
         tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], SPb__gt=0.5).order_by(field)
     totalCount = objs.count()
+    print('-----------', totalCount)
+    requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
+    data = serializers.serialize('json', requestData)
+    content = {"totalCount": totalCount,
+               "data": data}
+    return JsonResponse(content)
+
+
+def alignFatcatScore(request):
+    # 分页
+    pageSize = int(request.GET.get('pageSize'))
+    currentPage = int(request.GET.get('currentPage'))
+    tool = request.GET.get('tool')
+    field = '-chain2_len'
+    filters = json.loads(request.GET.get('filters'))
+    print(filters)
+    if request.GET.get("field"):
+        print(request.GET.get('field'))
+        field = re_field.sub('', request.GET.get("field"))
+        print("field:", field)
+        if request.GET.get("order") == "descending":
+            field = '-' + field
+
+    objs = AlignFatcatScore.objects.all().filter(
+        chain1=cas9Dt[filters['protein']],).all().filter(chain2_len__gt=filters['min_len'],
+                                                         seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI'],
+                                                         chain2_len__lt=filters['max_len']).order_by(field)
+
+    totalCount = objs.count()
+
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = serializers.serialize('json', requestData)

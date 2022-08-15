@@ -138,8 +138,8 @@ class Main:
             AlignSPScore.objects.bulk_create(info)
         print(all + count)
 
-    def AlignFatcatScore(self, tool, delete,
-                         Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/SPalignNS/colabFoldPdb.SPalignNS_out.txt"):
+    def AlignFatcatScore(self,
+                         Fi="/dat1/nbt2/proj/22-cas/work/cas9/cas9_vs_colafold/result/Fatcat/colabFoldPdb.Fatcat.log"):
         '''
         python tx2db_crispr.py AlignFatcatScore
         '''
@@ -154,14 +154,14 @@ class Main:
                 cell = li.rstrip('\n').split("\t")
                 q = AlignFatcatScore(
                     chain1=cell[0],
-                    chain2_acc=cell[1],
+                    chain2_acc=cell[1].split('-')[0],
                     chain1_len=cell[2],
                     chain2_len=cell[3],
                     cov1=cell[4],
                     cov2=cell[5],
                     seq_ID=cell[6],
                     similar=cell[7],
-                    alignScore=cell[7],
+                    alignScore=cell[8],
                     tmScore=cell[9],
                     RMSD=cell[10],
                 )
