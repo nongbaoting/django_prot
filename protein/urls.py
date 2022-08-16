@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/similarity/getOneItem/", struc_similarity.getOneItem),
     path("api/similarity/aligment/TMalign", struc_align.pair_TMalign),
     path("api/similarity/aligment/SPalign", struc_align.pair_SPalign),
+    path("api/similarity/aligment/Fatcat", struc_align.pair_Fatcat),
 
     # sequnce similarity
     path("api/blast/psijackhmmer/", blast.psijackhmmer),

@@ -7,6 +7,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from os import path
 import os
 import re
+from django.forms.models import model_to_dict
 
 
 def browse(request):
@@ -89,7 +90,16 @@ def alignTMscore(request):
     ).order_by(field)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
-    data = serializers.serialize('json', requestData)
+    print(requestData)
+    data = []
+    for item in requestData:
+        it = model_to_dict(item)
+        print(it)
+        cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+        it["protein_name"] = cas9.protein_name
+        it["organism"] = cas9.organism
+        data.append(it)
+    # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
                "data": data}
     return JsonResponse(content)
@@ -111,11 +121,19 @@ def alignSPscore(request):
             field = '-' + field
     objs = AlignSPScore.objects.all().filter(
         chain1=cas9Dt[filters['protein']],
-        tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], SPb__gt=0.5).order_by(field)
+        tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']).order_by(field)
     totalCount = objs.count()
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
-    data = serializers.serialize('json', requestData)
+    data = []
+    for item in requestData:
+        it = model_to_dict(item)
+        print(it)
+        cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+        it["protein_name"] = cas9.protein_name
+        it["organism"] = cas9.organism
+        data.append(it)
+    # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
                "data": data}
     return JsonResponse(content)
@@ -145,7 +163,15 @@ def alignFatcatScore(request):
 
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
-    data = serializers.serialize('json', requestData)
+    data = []
+    for item in requestData:
+        it = model_to_dict(item)
+        print(it)
+        cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+        it["protein_name"] = cas9.protein_name
+        it["organism"] = cas9.organism
+        data.append(it)
+    # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
                "data": data}
     return JsonResponse(content)
