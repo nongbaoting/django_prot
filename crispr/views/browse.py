@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from django.http import JsonResponse, FileResponse, Http404
 
 from crispr.models import *
@@ -74,11 +75,11 @@ def alignTMscore(request):
     # 分页
     pageSize = int(request.GET.get('pageSize'))
     currentPage = int(request.GET.get('currentPage'))
-    field = '-chain2_len'
+    field = '-seq_ID'
     if request.GET.get("field"):
-        print(request.GET.get('field'))
+        # print(request.GET.get('field'))
         field = re_field.sub('', request.GET.get("field"))
-        print("field:", field)
+        # print("field:", field)
         if request.GET.get("order") == "descending":
             field = '-' + field
 
@@ -88,13 +89,16 @@ def alignTMscore(request):
         chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'],
         seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']
     ).order_by(field)
+
+    if filters['exclude_knownCas'] == True:
+        objs = filter_known_cas(objs)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
-    print(requestData)
+
     data = []
     for item in requestData:
         it = model_to_dict(item)
-        print(it)
+        # print(it)
         cas9 = CASInfo.objects.get(accession=item.chain2_acc)
         it["protein_name"] = cas9.protein_name
         it["organism"] = cas9.organism
@@ -110,9 +114,9 @@ def alignSPscore(request):
     pageSize = int(request.GET.get('pageSize'))
     currentPage = int(request.GET.get('currentPage'))
     tool = request.GET.get('tool')
-    field = '-chain2_len'
+    field = '-seq_ID'
     filters = json.loads(request.GET.get('filters'))
-    print(filters)
+    # print(filters)
     if request.GET.get("field"):
         print(request.GET.get('field'))
         field = re_field.sub('', request.GET.get("field"))
@@ -122,6 +126,9 @@ def alignSPscore(request):
     objs = AlignSPScore.objects.all().filter(
         chain1=cas9Dt[filters['protein']],
         tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']).order_by(field)
+
+    if filters['exclude_knownCas'] == True:
+        objs = filter_known_cas(objs)
     totalCount = objs.count()
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
@@ -143,8 +150,9 @@ def alignFatcatScore(request):
     # 分页
     pageSize = int(request.GET.get('pageSize'))
     currentPage = int(request.GET.get('currentPage'))
+
     tool = request.GET.get('tool')
-    field = '-chain2_len'
+    field = '-seq_ID'
     filters = json.loads(request.GET.get('filters'))
     print(filters)
     if request.GET.get("field"):
@@ -159,6 +167,8 @@ def alignFatcatScore(request):
                                                          seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI'],
                                                          chain2_len__lt=filters['max_len']).order_by(field)
 
+    if filters['exclude_knownCas'] == True:
+        objs = filter_known_cas(objs)
     totalCount = objs.count()
 
     print('-----------', totalCount)
@@ -175,3 +185,22 @@ def alignFatcatScore(request):
     content = {"totalCount": totalCount,
                "data": data}
     return JsonResponse(content)
+
+
+########### functions #########
+
+infoFi = "/dat1/nbt2/proj/22-cas/work/cas9/known_cas9.txt"
+info = open(infoFi).read().strip('\n').split('\n')
+cas9Info = defaultdict(list)
+for li in info:
+    cell = li.split("\t")
+    cas9Info[cell[1]] = cell
+
+
+def filter_known_cas(scoreObj):
+    casinfo = CASInfo.objects.all()
+    for cas9 in cas9Info:
+        casinfo = casinfo.exclude(organism__contains=cas9Info[cas9][2])
+    scoreObj = scoreObj.filter(chain2_acc__in=casinfo.values_list(
+        'accession', flat=True))
+    return scoreObj
