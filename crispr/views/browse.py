@@ -1,7 +1,6 @@
 import json
 from collections import defaultdict
 from django.http import JsonResponse, FileResponse, Http404
-
 from crispr.models import *
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -41,7 +40,8 @@ def browse(request):
 
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
-               "data": data}
+               "data": data
+               }
     return JsonResponse(content)
 
 
