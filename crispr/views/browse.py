@@ -9,6 +9,10 @@ import os
 import re
 from django.forms.models import model_to_dict
 
+candidateFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/candidate.txt"
+candidates = [i for i in open(candidateFi).read().strip(
+    '\n').split('\n') if not re.match("#", i)]
+
 
 def browse(request):
     data = {"hello": "world"}
@@ -92,6 +96,8 @@ def alignTMscore(request):
 
     if filters['exclude_knownCas'] == True:
         objs = filter_known_cas(objs)
+    if filters['candidates'] == True:
+        objs = objs.filter(chain2_acc__in=candidates)
     totalCount = objs.count()
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
 
@@ -129,6 +135,9 @@ def alignSPscore(request):
 
     if filters['exclude_knownCas'] == True:
         objs = filter_known_cas(objs)
+    if filters['candidates'] == True:
+        objs = objs.filter(chain2_acc__in=candidates)
+
     totalCount = objs.count()
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
@@ -169,8 +178,10 @@ def alignFatcatScore(request):
 
     if filters['exclude_knownCas'] == True:
         objs = filter_known_cas(objs)
-    totalCount = objs.count()
 
+    if filters['candidates'] == True:
+        objs = objs.filter(chain2_acc__in=candidates)
+    totalCount = objs.count()
     print('-----------', totalCount)
     requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
     data = []
