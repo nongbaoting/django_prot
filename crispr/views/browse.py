@@ -66,13 +66,11 @@ def struc_getFile(request):
             print("not found: ", filePath)
             raise Http404
 
-
 cas9Dt = {
     'spCas9-3': '4un3',
     'cjCas9-3': '5x2g',
     'Nme1Cas9-3': '6jdv'
 }
-
 
 def alignTMscore(request):
 
@@ -108,6 +106,8 @@ def alignTMscore(request):
         cas9 = CASInfo.objects.get(accession=item.chain2_acc)
         it["protein_name"] = cas9.protein_name
         it["organism"] = cas9.organism
+        it["genome_genbank"] = cas9.genome_genbank
+        it["protein_genebankID"] = cas9.protein_genebankID
         data.append(it)
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
@@ -144,10 +144,12 @@ def alignSPscore(request):
     data = []
     for item in requestData:
         it = model_to_dict(item)
-        print(it)
+        # print(it)
         cas9 = CASInfo.objects.get(accession=item.chain2_acc)
         it["protein_name"] = cas9.protein_name
         it["organism"] = cas9.organism
+        it["genome_genbank"] = cas9.genome_genbank
+        it["protein_genebankID"] = cas9.protein_genebankID
         data.append(it)
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
@@ -187,10 +189,12 @@ def alignFatcatScore(request):
     data = []
     for item in requestData:
         it = model_to_dict(item)
-        print(it)
+        # print(it)
         cas9 = CASInfo.objects.get(accession=item.chain2_acc)
         it["protein_name"] = cas9.protein_name
         it["organism"] = cas9.organism
+        it["genome_genbank"] = cas9.genome_genbank
+        it["protein_genebankID"] = cas9.protein_genebankID
         data.append(it)
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
@@ -199,14 +203,12 @@ def alignFatcatScore(request):
 
 
 ########### functions #########
-
 infoFi = "/dat1/nbt2/proj/22-cas/work/cas9/known_cas9.txt"
 info = open(infoFi).read().strip('\n').split('\n')
 cas9Info = defaultdict(list)
 for li in info:
     cell = li.split("\t")
     cas9Info[cell[1]] = cell
-
 
 def filter_known_cas(scoreObj):
     casinfo = CASInfo.objects.all()

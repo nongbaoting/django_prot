@@ -46,6 +46,8 @@ class Main:
                     organism=cell[5],
                     taxonomy_id=cell[6],
                     sequence_length=cell[7],
+                    genome_genbank  = cell[8],
+                    protein_genebankID =cell[9],
                 )
                 info.append(q)
                 count += 1

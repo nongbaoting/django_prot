@@ -14,6 +14,8 @@ class CASInfo(models.Model):
     organism = models.CharField(max_length=1000, db_index=True)
     taxonomy_id = models.CharField(max_length=100, null=True)
     sequence_length = models.IntegerField(null=True)
+    genome_genbank  = models.CharField(max_length=200, null=True)
+    protein_genebankID =models.CharField(max_length=200, null=True)
 
     def __str__(self):
         return self.gene_name + '_' + self.protein_name
