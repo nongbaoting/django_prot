@@ -195,6 +195,7 @@ def alignFatcatScore(request):
         it["organism"] = cas9.organism
         it["genome_genbank"] = cas9.genome_genbank
         it["protein_genebankID"] = cas9.protein_genebankID
+        it['repeatinfo'] = repeatDt[cas9.genome_genbank]
         data.append(it)
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
@@ -217,3 +218,12 @@ def filter_known_cas(scoreObj):
     scoreObj = scoreObj.filter(chain2_acc__in=casinfo.values_list(
         'accession', flat=True))
     return scoreObj
+
+
+repeatFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/results/anti_repeat.info"
+repeatDt = defaultdict(list)
+with open(repeatFi) as f:
+    for li in f:
+        cell = li.strip('\n').split("\t")
+        repeatDt[cell[0] ].append  ( cell)
+
