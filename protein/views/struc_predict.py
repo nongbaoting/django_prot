@@ -53,7 +53,7 @@ def struc_search(request):
     searchContent = request.GET.get("searchContent")
     if searchType == 'job_name':
         searchContent = reg_W.sub('_', searchContent)
-        queryset = SubmitInfo.objects.filter(job_name__contains=searchContent)
+        queryset = SubmitInfo.objects.filter(job_name__icontains=searchContent)
     elif searchType == 'job_name_id':
         queryset = SubmitInfo.objects.filter(job_name=searchContent)
 
