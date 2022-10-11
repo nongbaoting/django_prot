@@ -13,17 +13,23 @@ import fire
 import re
 import gzip
 import django
-import os
-import sys
-import fire
-import gzip
-import re
 from django.core.exceptions import ObjectDoesNotExist
+from collections import defaultdict
+
+from django.forms.models import model_to_dict
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_prot.settings")
 if django.VERSION >= (1, 7):
     django.setup()
 
+
+def filter_known_cas(scoreObj):
+    casinfo = CASInfo.objects.all()
+    for cas9 in cas9Info:
+        casinfo = casinfo.exclude(organism__contains=cas9Info[cas9][2])
+    scoreObj = scoreObj.filter(chain2_acc__in=casinfo.values_list(
+        'accession', flat=True))
+    return scoreObj
 
 class Main:
 
@@ -179,6 +185,65 @@ class Main:
             AlignFatcatScore.objects.bulk_create(info)
         print(all + count)
 
+    def export_FATCAT_table(self,):
+        from crispr.models import AlignFatcatScore,CASInfo
+        candidateFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/candidate.txt"
+        candidates = [i for i in open(candidateFi).read().strip(
+    '\n').split('\n') if not re.match("#", i)]
+        repeatFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/results/anti_repeat.info"
+        repeatDt = defaultdict(list)
+        headers = ["chain1",
+                    "chain2_acc",
+                    "chain1_len",
+                    "chain2_len",
+                    "cov1",
+                    "cov2",
+                    "seq_ID",
+                    "similar",
+                    "alignScore",
+                    "tmScore",
+                    "RMSD","protein_name",
+                    "organism",
+                    "genome_genbank",
+                    "protein_genebankID"]
+
+        head = '\t'.join(headers)
+        with open(repeatFi) as f:
+            for li in f:
+                cell = li.strip('\n').split("\t")
+                repeatDt[cell[0] ].append( cell)
+
+        objs = AlignFatcatScore.objects.all()
+        fo = open("cas9_all.FATCAT.xls", 'w')
+        fo.write(head + '\n')
+        
+        for item in objs:
+            it = model_to_dict(item)
+            # print(it)
+            cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+            it["protein_name"] = cas9.protein_name
+            it["organism"] = cas9.organism
+            it["genome_genbank"] = cas9.genome_genbank
+            it["protein_genebankID"] = cas9.protein_genebankID
+            # it['repeatinfo'] = repeatDt[cas9.genome_genbank]
+            fo.write("\t".join([str(i) for i in it.values()][1:]) + '\n')
+        
+        # objs = filter_known_cas(objs)
+        objs = objs.filter(chain2_acc__in=candidates)
+        fo2 = open("cas9_candidates.FATCAT.xls", 'w')
+        fo2.write(head + '\n')
+        for item in objs:
+            it = model_to_dict(item)
+            # print(it)
+            cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+            it["protein_name"] = cas9.protein_name
+            it["organism"] = cas9.organism
+            it["genome_genbank"] = cas9.genome_genbank
+            it["protein_genebankID"] = cas9.protein_genebankID
+            # it['repeatinfo'] = repeatDt[cas9.genome_genbank]
+            fo2.write("\t".join([str(i) for i in it.values()][1:]) + '\n')
+
+        
 
 if __name__ == '__main__':
     fire.Fire(Main)
