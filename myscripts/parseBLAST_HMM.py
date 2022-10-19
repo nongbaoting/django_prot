@@ -6,12 +6,12 @@ from collections import defaultdict
 reg_sp = re.compile("\s+")
 reg_cm = re.compile("#")
 reg_CRISPR = re.compile("CRISPR", re.I)
-from protein.models import CDD, protCDncbiOne
+from protein.models import CDD, protCDOne
 
 def retrieve_cdd(protin_id):
     # cdd_nameCat = ''
     # cdd_noteCat =''
-    obj = protCDncbiOne.objects.filter(protin_id=protin_id).first()
+    obj = protCDOne.objects.filter(protin_id=protin_id).first()
     cdd_names,cdd_ids, cdd_notes = [],[],[]
     cdd_nameCat, cdd_idCat, cdd_noteCat ='','',''
     if obj:
@@ -83,9 +83,6 @@ class HMMER:
     def parse_jackhmmer(self, hmm, domtbl, outFi):
         align = parse_hmmer(hmm)
         tbl = parse_hmmerdomtbl(domtbl)
-        
-        
-        
         data =[]
         for seq_id in tbl:
             info = tbl[seq_id]

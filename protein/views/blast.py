@@ -180,7 +180,7 @@ def res_blast_jackhmmer(request):
             cdd_locs = []
             protin = NrInfo.objects.filter(protin_id=protin_id).first()
             # TODO 旧的用all,新的用NCBI
-            regions = protCDncbi.objects.filter(protin_id=protin_id)
+            regions = protCD.objects.filter(protin_id=protin_id)
             for qr in regions:
                 qcd = CDD.objects.get(cdd_id=qr.cdd_id_id)
                 cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
