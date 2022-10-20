@@ -179,6 +179,7 @@ class BLAST:
             out_hmmtbl = path.join(self.out_dir ,'out.hmm.tbl')
             out_hmmdomttbl = path.join(self.out_dir ,'out.hmm.domttbl')
             out_json =  path.join(self.out_dir,"jackhmmer.json")
+            out_architectures =  path.join(self.out_dir,"jackhmmer_archi.json")
             cmd=f"jackhmmer  {self.jackhmmer_params} \
                 -o {out_hmm} --tblout {out_hmmtbl} --domtblout {out_hmmdomttbl} \
                 --cpu 16 {self.fa_file} {dbDir['jackhmmer'][self.dbName]}"
@@ -190,7 +191,7 @@ class BLAST:
                print(f'{program}  success!')
                ## /parse file
                hmmer = parseBLAST_HMM.HMMER()
-               hmmer.parse_jackhmmer(out_hmm, out_hmmdomttbl, out_json ) 
+               hmmer.parse_jackhmmer(out_hmm, out_hmmdomttbl, out_json,out_architectures ) 
         else:
             print("Did not choose " + program)
             status = -1

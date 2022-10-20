@@ -96,3 +96,25 @@ def addCDcorlor(content,colors=colorSet):
             loc.append(myd[ loc[2] ])
         new_arr.append(items)
     return new_arr
+
+def addCDArchiColor(content,colors=colorSet):
+    myd = defaultdict(str)
+    index = 0
+    new_arr = []
+    for item in content:
+        cddNames = item["cdd_nameCat"].split(', ')
+        cd_color = []
+        for cd_name in cddNames:
+            if cd_name not in myd:
+                myd[cd_name] = colors[index]
+                index += 1
+                if index >= len(colors):
+                        index=0
+            cd_color.append(myd[cd_name])
+        item['colors'] = cd_color
+        item['cddNames'] = cddNames
+        new_arr.append(item)
+    
+    return new_arr
+
+

@@ -44,6 +44,7 @@ urlpatterns = [
     # sequnce similarity
     path("api/blast/psijackhmmer/", blast.psijackhmmer),
     path("api/blast/res/blast_jackhmmer/", blast.res_blast_jackhmmer),
+     path("api/blast/res/architecture/", blast.architecture),
     path("api/blast/queue/", blast.queue),
     path("api/blast/queue/search/", blast.search),
 

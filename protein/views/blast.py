@@ -34,9 +34,8 @@ blast_outdir_old = "/dat1/nbt2/proj/21-prot/web/data/res/bak/blast"
 # run_blast.watch_dog()
 
 # views
+
 # submit
-
-
 def psijackhmmer(request):
     data = {}
     status = 200
@@ -83,6 +82,54 @@ blastDict = defaultdict(dict)
 blastLt = []
 
 
+def architecture(request):
+    if request.method == "GET":
+        pageSize = int(request.GET.get('pageSize'))
+        currentPage = int(request.GET.get('currentPage'))
+        myuuid = request.GET.get("uuid")
+        program = request.GET.get("program")
+        order = request.GET.get("order")
+        field = request.GET.get("field")
+        fileName = ''
+        if program == 'jackhmmer':
+            fileName = "jackhmmer_archi.json"
+        elif program == 'psiblast':
+            fileName = "psiblast_archi.json"
+        elif program == 'BLASTP':
+            fileName = "BLASTP_archi.json"
+        archi_fi =  path.join(blast_outdir, myuuid,  fileName)
+        f = open(archi_fi)
+        archi_json = json.loads(json.load(f))
+        f.close()
+        totalCount = len(archi_json)
+        if order == "descending":
+            archi_json = sorted(archi_json, key=lambda k: k[field], reverse=True)
+        else:
+            archi_json = sorted(archi_json, key=lambda k: k[field])
+
+        requestData = archi_json[(currentPage - 1) * pageSize: currentPage * pageSize]
+        content = []
+        for items in requestData:
+            protin_id = items['rep_protein_id']
+            cdd_locs = []
+            protin = NrInfo.objects.filter(protin_id=protin_id).first()
+            # TODO 旧的用all,新的用NCBI
+            regions = protCD.objects.filter(protin_id=protin_id)
+            for qr in regions:
+                qcd = CDD.objects.get(cdd_id=qr.cdd_id_id)
+                cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
+            items["cdd_locs"] = cdd_locs
+            # items["target_len"] = protin.length
+            content.append(items)
+
+        content_color = myFunctions.addCDcorlor(content)
+        data = {"totalCount": totalCount,
+                "data": content_color,
+                'status': 200
+                }
+
+        return JsonResponse(data)
+
 @cache_page(60 * 15)
 def res_blast_jackhmmer(request):
     data = {}
@@ -98,6 +145,7 @@ def res_blast_jackhmmer(request):
         currentPage = body["currentPage"]
         order = body["order"]
         field = body["field"]
+        
         print("pageSize:", pageSize, currentPage)
 
         data['msg'] = 'running'
@@ -155,6 +203,9 @@ def res_blast_jackhmmer(request):
             dt = filter_jackhmmer(body, dt)
         elif program in ['psiblast', "BLASTP"]:
             dt = filter_jackhmmer(body, dt)
+        if "cdd_nameCat" in body:
+            cdd_nameCat = body["cdd_nameCat"]
+            dt = filter_architechure(cdd_nameCat,data)
         totalCount = len(dt)
         print("After filter: ", totalCount)
         #  order
@@ -259,6 +310,13 @@ def shift_dict(mydt, newKey, lt, keep_len=10):
         headKey = lt.pop(0)
         del mydt[headKey]
     return [mydt, lt]
+
+def filter_architechure(cdd_nameCat, data):
+    dt = []
+    for item in data:
+        if item["cdd_nameCat"] == cdd_nameCat:
+            dt.append(item)
+    return dt
 
 
 def filter_jackhmmer(body, data):

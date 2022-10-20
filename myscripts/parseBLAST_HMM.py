@@ -9,15 +9,11 @@ reg_CRISPR = re.compile("CRISPR", re.I)
 from protein.models import CDD, protCDOne
 
 def retrieve_cdd(protin_id):
-    # cdd_nameCat = ''
-    # cdd_noteCat =''
     obj = protCDOne.objects.filter(protin_id=protin_id).first()
     cdd_names,cdd_ids, cdd_notes = [],[],[]
     cdd_nameCat, cdd_idCat, cdd_noteCat ='','',''
     if obj:
-        # print(obj.cdd_annots)
         cdd_nameCat, cdd_idCat= obj.cdd_nameCat, obj.cdd_idCat
-        # cdd_names = cdd_nameCat.split(', ')
         cdd_ids = cdd_idCat.split(', ')
         for cdd_id_ in cdd_ids:
             q = CDD.objects.get(cdd_id =cdd_id_ )
@@ -37,33 +33,22 @@ def parse_hmmer(Fi):
 
 def parse_hmmerdomtbl(Fi):
     tbl = defaultdict(dict)
+    sameDomain =defaultdict(list)
     with open(Fi, 'r') as f:
-        # fo.write('\t'.join(["target","_","tlen","qeuery","_","qlen","E_value","score","bias","domain","domain_numbers","c_Evalue","i_Evalue","domain_score","domain_bias","query_from","query_to","target_from","target_to","env_from","env_to","acc","description"]))
-        # fo.write('\t'.join(["target","_","target_len","query","_","query_len","E_value","score","bias","domain","domain_numbers","domain_Evalue","domain_Evalue","domain_score","domain_bias","query_from","query_to","target_from","target_to","env_from","env_to","acc","description"]) + '\n')
         for li in f:
             li = li.strip()
             if re.match("#", li):continue
             cell = reg_sp.split( li)
             target, _, tlen,query, _, qlen,E_value, score,bias, domain,domain_numbers, c_Evalue, i_Evalue, domain_score, domain_bias, query_from, query_to, target_from, target_to, env_from, env_to, acc = cell[0:22]
-            if int(tlen) <= 400 : continue
+            tlen = int(tlen)
+            # if tlen <= 400 : continue
             new_cell = cell[0:22].copy()
             desc = li[181:]
-            # fo.write("\t".join(new_cell) + '\n')
-            # obj = ProtCDD.objects.filter(protin_id=target).first()
-            # TODO
             cdd_names, cdd_ids, cdd_notes = retrieve_cdd(target )
-            # if obj:
-            #     # print(obj.cdd_annots)
-            #     cdd_annots = obj.cdd_annots
-            #     cdd_notes = obj.cdd_notes
-            # else:
-            #     # print("not exist")
-            #     cdd_annots = ''
-            #     cdd_notes = ''
             dt = {
                 "target": target,
                 "query": query,
-                "target_len": int(tlen),
+                "target_len": tlen,
                 "E_value": float(E_value),
                 "score": float(score),
                 "domain":domain,
@@ -74,15 +59,42 @@ def parse_hmmerdomtbl(Fi):
                 "cdd_noteCat" :cdd_notes,
                 "cdd_idCat" : cdd_ids,
             }
+            sameDomain[cdd_names].append([target, tlen, desc])
             tbl[target] = dt
-    print(len(tbl))
-    return tbl
+    newSameDomainList = []
+    
+    for cdd_nameCat in sameDomain:
+        min_tlen, max_tlen = 10000000,0
+        descDt = defaultdict(int)
+        proteinLenDt = defaultdict(list)
+        count = len(sameDomain[cdd_nameCat])
+        for target, tlen, desc in sameDomain[cdd_nameCat]:
+            proteinLenDt[str(tlen)].append(target)
+            min_tlen = min(tlen,min_tlen)
+            max_tlen =max(tlen,max_tlen)
+            descDt[desc.split('[')[0] ] +=1
+        commonDesc = sorted(descDt.items(), key=lambda k: k[1], reverse=True)[0][0]
+        lenMode = sorted(proteinLenDt.keys(), key=lambda k: int(k), reverse=True)[0]
+        rep_protein_id = proteinLenDt[lenMode][0]
+        domainInfo = {
+            "cdd_nameCat": cdd_nameCat,
+            "min_tlen": min_tlen,
+            "max_tlen": max_tlen, 
+            "count":count,
+            "commonDesc":commonDesc,
+            "rep_protein_id":rep_protein_id,
+            "target_len" : int(lenMode)
+            
+        }
+        newSameDomainList.append(domainInfo)
+    newSameDomainList = sorted(newSameDomainList, key=lambda k: k["target_len"])
+    return [tbl,newSameDomainList]
 
 class HMMER:
                 
-    def parse_jackhmmer(self, hmm, domtbl, outFi):
+    def parse_jackhmmer(self, hmm, domtbl, outFi, out_archiFi):
         align = parse_hmmer(hmm)
-        tbl = parse_hmmerdomtbl(domtbl)
+        tbl, architecture = parse_hmmerdomtbl(domtbl)
         data =[]
         for seq_id in tbl:
             info = tbl[seq_id]
@@ -93,7 +105,9 @@ class HMMER:
         dt_json = json.dumps(data)
         with open(outFi, 'w') as fo:
             json.dump(dt_json, fo)
-    
+        
+        with open(out_archiFi, 'w') as fo_a:
+            json.dump( json.dumps(architecture), fo_a)
 class BLAST:
     def parse_psiblast(self, xml, outFi):
         parse_psiblast_xml(xml,outFi)
@@ -159,15 +173,7 @@ def parse_psiblast_xml(xml,outFi):
                                 sbjct_start + len(sbjct[(i * 60):((i + 1) * 60)]) - 1))
                             query_start += 60
                             sbjct_start += 60
-                        # obj = ProtCDD.objects.filter(protin_id=title_seq_id).first()
-                        # if obj:
-                        #     # print(obj.cdd_annots)
-                        #     cdd_annots = obj.cdd_annots
-                        #     cdd_notes = obj.cdd_notes
-                        # else:
-                        #     # print("not exist")
-                        #     cdd_annots = ''
-                        #     cdd_notes = ''
+
                         cdd_names,cdd_ids, cdd_notes = retrieve_cdd(title_seq_id )
                         dt = {
                         "target":title_seq_id,
@@ -181,8 +187,8 @@ def parse_psiblast_xml(xml,outFi):
                         "acc": float(ident),
                         'desc': title_desc ,
                        "cdd_nameCat" :cdd_names ,
-                    "cdd_noteCat" :cdd_notes,
-                    "cdd_idCat" : cdd_ids,
+                        "cdd_noteCat" :cdd_notes,
+                        "cdd_idCat" : cdd_ids,
                         "pairwise":[align]
                         }
                         data.append(dt)
@@ -191,4 +197,4 @@ def parse_psiblast_xml(xml,outFi):
         json.dump(dt_json, fo)
 
 if __name__ == "__main__":
-    fire.Fire(BLAST)
+    fire.Fire(HMMER)
