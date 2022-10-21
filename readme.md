@@ -73,17 +73,12 @@ sudo systemctl restart apache2
 
 python manage.py runserver 222.200.186.47:9001
 
-# django 目录
-
-`/training/nong/web/public`
-
 # dev to public
 
 cd /dat1/nbt2/server/PROTsim/public
 
 mv django_prot bak/
 cp -r ../django_prot .
-
 
 # 2.1 启动blast 124
 
@@ -96,8 +91,6 @@ python run_predict.py  watch_blast
 # mysql
 
 mysqldump -u nongbt -pNBT9175.814@lys628 --no-tablespaces --databases nongbt_db > /dat1/nbt2/proj/21-prot/web/data/mysql/nongbt_db `dateymd`.sql
-
-# mysql
 
 drop database nongbt_db;
 CREATE DATABASE nongbt_db CHARACTER SET utf8 COLLATE utf8_general_ci;

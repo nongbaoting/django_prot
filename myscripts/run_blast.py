@@ -126,6 +126,7 @@ class BLAST:
         status = 1
         if program in self.programs:
             self.blastp_json = path.join(self.out_dir, 'BLASTP.json' )
+            self.blastp_archi_json = path.join(self.out_dir, 'BLASTP_archi.json' )
             self.blastp_out = path.join(self.out_dir,  'BLASTP.xml' )
             cmd=f"blastp -db  {dbDir['blast'][self.dbName]} -query  {self.fa_file} -max_target_seqs 100000 \
             -outfmt 5  -out { self.blastp_out} -num_threads 16 \
@@ -140,7 +141,7 @@ class BLAST:
                print(f'{program}  success!')
                ## /parse file
                blast = parseBLAST_HMM.BLAST()
-               blast.parse_psiblast(self.blastp_out, self.blastp_json )              
+               blast.parse_psiblast(self.blastp_out, self.blastp_json,self.blastp_archi_json )              
         else:
             status = -1
             print("Did not choose " + program)
@@ -150,8 +151,9 @@ class BLAST:
         program = "PSI-BLAST"
         status = 1
         if program in self.programs:
-            self.psi_json = path.join(self.out_dir, 'psiblast.json' )
             self.psi_out = path.join(self.out_dir,  'psiblast.xml' )
+            self.psi_json = path.join(self.out_dir, 'psiblast.json' )
+            self.psi_out_archi = path.join(self.out_dir,  'psiblast_archi.json' )
             cmd=f"psiblast -db  {dbDir['blast'][self.dbName]} -query  {self.fa_file} -max_target_seqs 1000000 \
             -outfmt 5  -out { self.psi_out} -num_threads 16 \
              {self.psiblast_params} "
@@ -165,7 +167,7 @@ class BLAST:
                print(f'{program}  success!')
                ## /parse file
                blast = parseBLAST_HMM.BLAST()
-               blast.parse_psiblast(self.psi_out, self.psi_json )              
+               blast.parse_psiblast(self.psi_out, self.psi_json ,self.psi_out_archi)              
         else:
             print("Did not choose " + program)
             status = -1

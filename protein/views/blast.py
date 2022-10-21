@@ -99,8 +99,11 @@ def architecture(request):
             fileName = "BLASTP_archi.json"
         archi_fi =  path.join(blast_outdir, myuuid,  fileName)
         f = open(archi_fi)
-        archi_json = json.loads(json.load(f))
+        archi_json_content = json.loads(json.load(f))
         f.close()
+        archi_json = archi_json_content["architechure"]
+        totalSequence = archi_json_content["totalSequence"]
+        seqWithAnnotate = archi_json_content["seqWithAnnotate"]
         totalCount = len(archi_json)
         if order == "descending":
             archi_json = sorted(archi_json, key=lambda k: k[field], reverse=True)
@@ -124,6 +127,8 @@ def architecture(request):
 
         content_color = myFunctions.addCDcorlor(content)
         data = {"totalCount": totalCount,
+                "totalSequence": totalSequence,
+                "seqWithAnnotate": seqWithAnnotate,
                 "data": content_color,
                 'status': 200
                 }
@@ -203,13 +208,14 @@ def res_blast_jackhmmer(request):
             dt = filter_jackhmmer(body, dt)
         elif program in ['psiblast', "BLASTP"]:
             dt = filter_jackhmmer(body, dt)
+        
         if "cdd_nameCat" in body:
             cdd_nameCat = body["cdd_nameCat"]
-            dt = filter_architechure(cdd_nameCat,data)
+            dt = filter_architechure(cdd_nameCat, dt)
         totalCount = len(dt)
         print("After filter: ", totalCount)
         #  order
-        print("order field", field)
+        print("order field:", field)
         if order == "descending":
             dt = sorted(dt, key=lambda k: k[field], reverse=True)
         else:
@@ -313,7 +319,9 @@ def shift_dict(mydt, newKey, lt, keep_len=10):
 
 def filter_architechure(cdd_nameCat, data):
     dt = []
+    # print("cdd",cdd_nameCat )
     for item in data:
+        
         if item["cdd_nameCat"] == cdd_nameCat:
             dt.append(item)
     return dt

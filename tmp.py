@@ -54,6 +54,10 @@ class RUN:
         from myscripts import parseBLAST_HMM
         hmmer = parseBLAST_HMM.HMMER()
         hmmer.parse_jackhmmer(out_hmm, out_hmmdomttbl, out_json, out_architectures ) 
+    def parse_blast(self,xml, out_json,out_architectures):
+        from myscripts import parseBLAST_HMM
+        
+        parseBLAST_HMM.parse_psiblast_xml(xml, out_json, out_architectures ) 
 
 if __name__ == "__main__":
     fire.Fire(RUN)

@@ -18,8 +18,10 @@ def retrieve_cdd(protin_id):
         for cdd_id_ in cdd_ids:
             q = CDD.objects.get(cdd_id =cdd_id_ )
             desc = q.cdd_desc_short
-            cdd_notes.append(desc)
-        cdd_noteCat = '^^'.join(cdd_notes)
+            # cdd_notes.append(desc)
+            cdd_names.append(q.cdd_name)
+        # cdd_noteCat = '^^'.join(cdd_notes)
+        cdd_nameCat = ', '.join(cdd_names)
     return [ cdd_nameCat, cdd_idCat, cdd_noteCat]
 
 def parse_hmmer(Fi):
@@ -34,6 +36,7 @@ def parse_hmmer(Fi):
 def parse_hmmerdomtbl(Fi):
     tbl = defaultdict(dict)
     sameDomain =defaultdict(list)
+    seqWithAnnotate = 0
     with open(Fi, 'r') as f:
         for li in f:
             li = li.strip()
@@ -59,20 +62,24 @@ def parse_hmmerdomtbl(Fi):
                 "cdd_noteCat" :cdd_notes,
                 "cdd_idCat" : cdd_ids,
             }
+            
             sameDomain[cdd_names].append([target, tlen, desc])
             tbl[target] = dt
     newSameDomainList = []
-    
+    totalSequence = len(tbl.keys())
+
     for cdd_nameCat in sameDomain:
         min_tlen, max_tlen = 10000000,0
         descDt = defaultdict(int)
         proteinLenDt = defaultdict(list)
         count = len(sameDomain[cdd_nameCat])
         for target, tlen, desc in sameDomain[cdd_nameCat]:
+            if cdd_nameCat != "":
+                seqWithAnnotate +=1
             proteinLenDt[str(tlen)].append(target)
             min_tlen = min(tlen,min_tlen)
             max_tlen =max(tlen,max_tlen)
-            descDt[desc.split('[')[0] ] +=1
+            descDt[desc.split('[')[0].split(',')[0] ] +=1
         commonDesc = sorted(descDt.items(), key=lambda k: k[1], reverse=True)[0][0]
         lenMode = sorted(proteinLenDt.keys(), key=lambda k: int(k), reverse=True)[0]
         rep_protein_id = proteinLenDt[lenMode][0]
@@ -88,7 +95,12 @@ def parse_hmmerdomtbl(Fi):
         }
         newSameDomainList.append(domainInfo)
     newSameDomainList = sorted(newSameDomainList, key=lambda k: k["target_len"])
-    return [tbl,newSameDomainList]
+    architecture = {
+        "totalSequence":totalSequence,
+        "seqWithAnnotate":seqWithAnnotate,
+        "architechure":newSameDomainList
+    }
+    return [tbl,architecture]
 
 class HMMER:
                 
@@ -106,17 +118,21 @@ class HMMER:
         with open(outFi, 'w') as fo:
             json.dump(dt_json, fo)
         
-        with open(out_archiFi, 'w') as fo_a:
-            json.dump( json.dumps(architecture), fo_a)
+        with open(out_archiFi, 'w') as fo_archi:
+            json.dump( json.dumps(architecture), fo_archi)
 class BLAST:
-    def parse_psiblast(self, xml, outFi):
-        parse_psiblast_xml(xml,outFi)
+    def parse_psiblast(self, xml, outFi,out_archiFi):
+        parse_psiblast_xml(xml,outFi,out_archiFi)
 
 
-def parse_psiblast_xml(xml,outFi):
+def parse_psiblast_xml(xml,outFi, out_archiFi):
     E_VALUE_THRESH = 0.001
     data = []
-    with open(xml) as fh,  open(outFi, 'w') as fo:
+    sameDomain =defaultdict(list)
+    seqWithAnnotate = 0
+    
+
+    with open(xml) as fh:
         records = NCBIXML.parse(fh)
         print(dir(records))
         count =0 
@@ -128,7 +144,7 @@ def parse_psiblast_xml(xml,outFi):
             print('---------------',count)
             for alignment in blast_record.alignments:
                 num_matches = len(alignment.hsps)
-                print("num_matches:",num_matches)
+                # print("num_matches:",num_matches)
                 title = alignment.title
                 title_split = title.split()
                 title_id = title_split[0]
@@ -192,9 +208,49 @@ def parse_psiblast_xml(xml,outFi):
                         "pairwise":[align]
                         }
                         data.append(dt)
+                        target = title_seq_id
+                        desc = title_desc
+                        tlen = align_length
+                        sameDomain[cdd_names].append([target, tlen, desc])
         print("number of round:",count)
-        dt_json = json.dumps(data)
-        json.dump(dt_json, fo)
+        newSameDomainList = []
+        totalSequence = len(data)
+        for cdd_nameCat in sameDomain:
+            min_tlen, max_tlen = 10000000,0
+            descDt = defaultdict(int)
+            proteinLenDt = defaultdict(list)
+            count = len(sameDomain[cdd_nameCat])
+            for target, tlen, desc in sameDomain[cdd_nameCat]:
+                if cdd_nameCat != "":
+                    seqWithAnnotate +=1
+                proteinLenDt[str(tlen)].append(target)
+                min_tlen = min(tlen,min_tlen)
+                max_tlen =max(tlen,max_tlen)
+                descDt[desc.split('[')[0].split(',')[0] ] +=1
+            commonDesc = sorted(descDt.items(), key=lambda k: k[1], reverse=True)[0][0]
+            lenMode = sorted(proteinLenDt.keys(), key=lambda k: int(k), reverse=True)[0]
+            rep_protein_id = proteinLenDt[lenMode][0]
+            domainInfo = {
+                "cdd_nameCat": cdd_nameCat,
+                "min_tlen": min_tlen,
+                "max_tlen": max_tlen, 
+                "count":count,
+                "commonDesc":commonDesc,
+                "rep_protein_id":rep_protein_id,
+                "target_len" : int(lenMode)
+                
+            }
+            newSameDomainList.append(domainInfo)
+        newSameDomainList = sorted(newSameDomainList, key=lambda k: k["target_len"])
+        architecture = {
+            "totalSequence":totalSequence,
+            "seqWithAnnotate":seqWithAnnotate,
+            "architechure":newSameDomainList
+        }
+        with open(outFi, 'w') as fo, open(out_archiFi, 'w') as fo_archi:
+            dt_json = json.dumps(data)
+            json.dump(dt_json, fo)
+            json.dump( json.dumps(architecture), fo_archi)
 
 if __name__ == "__main__":
     fire.Fire(HMMER)
