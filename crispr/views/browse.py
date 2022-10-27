@@ -67,9 +67,9 @@ def struc_getFile(request):
             raise Http404
 
 cas9Dt = {
-    'spCas9-3': '4un3',
-    'cjCas9-3': '5x2g',
-    'Nme1Cas9-3': '6jdv'
+    'spCas9-3': ['4un3'],
+    'cjCas9-3': ['5x2g',"AF-Q0P897-F1-model_v3"],
+    'Nme1Cas9-3': ['6jdv']
 }
 
 def alignTMscore(request):
@@ -87,7 +87,7 @@ def alignTMscore(request):
 
     filters = json.loads(request.GET.get('filters'))
     objs = AlignTMScore.objects.all().filter(
-        chain1=cas9Dt[filters['protein']],
+        chain1__in=cas9Dt[filters['protein']],
         chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'],
         seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']
     ).order_by(field)
@@ -130,7 +130,7 @@ def alignSPscore(request):
         if request.GET.get("order") == "descending":
             field = '-' + field
     objs = AlignSPScore.objects.all().filter(
-        chain1=cas9Dt[filters['protein']],
+        chain1__in=cas9Dt[filters['protein']],
         tool=tool).all().filter(chain2_len__gt=filters['min_len'], chain2_len__lt=filters['max_len'], seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI']).order_by(field)
 
     if filters['exclude_knownCas'] == True:
@@ -174,7 +174,7 @@ def alignFatcatScore(request):
             field = '-' + field
 
     objs = AlignFatcatScore.objects.all().filter(
-        chain1=cas9Dt[filters['protein']],).all().filter(chain2_len__gt=filters['min_len'],
+        chain1__in=cas9Dt[filters['protein']],).all().filter(chain2_len__gt=filters['min_len'],
                                                          seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI'],
                                                          chain2_len__lt=filters['max_len']).order_by(field)
 
