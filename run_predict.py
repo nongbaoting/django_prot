@@ -137,7 +137,7 @@ class RUN:
         status = ['1', '1']
         print(obj.running_date)
 
-        if obj.running_date is not None:
+        if obj.running_date is not None and '0' in status:
             print('project have run before, skipping....')
         else:
             obj.running_date = timezone.now()
