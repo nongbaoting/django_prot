@@ -12,8 +12,8 @@ struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_alignment/"
 database_dir = '/dat1/nbt2/proj/21-prot/dat/pdb/mmCIF/'
 struc_result_dir = "/training/nong/protein/res/"
 
-cas9_dir = "/dat1/nbt2/proj/22-cas/work/cas9/dat.1/"
-cas9AF_dir = "/training/nong/protein/work/cas9_ColabFold/results/colabFoldPdb/"
+cas9_dir = "/dat1/nbt2/proj/22-cas/data/casRef/"
+cas9AF_dir = "/dat1/nbt2/proj/22-cas/data/cas-like/all/"
 
 
 def pair_TMalign(request):

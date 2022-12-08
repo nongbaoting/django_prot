@@ -1,5 +1,40 @@
-import json
+import json,re
 from collections import defaultdict
+from django.http import JsonResponse, FileResponse, Http404
+
+candidates = []
+def parse_info(infoFile = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"):
+    data = []
+    with open(infoFile, 'r') as f:
+        header = next(f).strip('\n').split("\t")
+        header_len = len(header)
+        for li in f:
+            cell = li.strip('\n').split("\t")
+            dt = {
+            "chain1": cell[0],
+            "chain2_acc": cell[1].split("-cf")[0],
+            "chain1_len": float(cell[2]),
+            "chain2_len": float(cell[3]),
+            "cov1":float(cell[4]),
+            "cov2":float(cell[5]),
+            "seq_ID":float(cell[6]),
+            "similar":float(cell[7]),
+            "alignScore":float(cell[8]),
+            "tmScore":float(cell[9]),
+            "RMSD":float(cell[10]),
+            "taxid":cell[11],
+            "organism":cell[12],
+            "upPam":cell[13],
+            "upScore": round(float(cell[14]),2),
+            "downPam":cell[15],
+            "downScore": round(float(cell[16]),2)
+            }
+
+            data.append(dt)
+    return data
+
+cas12f1 = parse_info()
+re_field = re.compile(r'fields.')
 
 def alignFatcatScore(request):
     # 分页
@@ -10,64 +45,51 @@ def alignFatcatScore(request):
     field = '-seq_ID'
     filters = json.loads(request.GET.get('filters'))
     print(filters)
+    cas12f1_data = cas12f1
     if request.GET.get("field"):
         print(request.GET.get('field'))
         field = re_field.sub('', request.GET.get("field"))
         print("field:", field)
         if request.GET.get("order") == "descending":
-            field = '-' + field
+            cas12f1_data = sorted(cas12f1, key=lambda x:x[field], reverse=True)
+        else:
+            cas12f1_data = sorted(cas12f1, key=lambda x:x[field])
+    cas12f1_filter = []
+    for item in cas12f1_data:
+        if item['chain1' ] == filters['protein']:
+            if item['chain2_len'] >= float(filters['min_len']) and item['chain2_len'] <= float(filters['max_len']):
+                if item['seq_ID'] >= float(filters['min_SI'] )and item['seq_ID']  <= float(filters['max_SI']):
+                    if item['organism']:
+                        if re.search(filters['organism'],  item['organism']):
+                            cas12f1_filter.append(item)
+                    else:
+                        cas12f1_filter.append(item)
+    # objs = AlignFatcatScore.objects.all().filter(
+    #     chain1__in=cas9Dt[filters['protein']],).all().filter(chain2_len__gt=filters['min_len'],
+    #                                                      seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI'],
+    #                                                      chain2_len__lt=filters['max_len']).order_by(field)
 
-    objs = AlignFatcatScore.objects.all().filter(
-        chain1__in=cas9Dt[filters['protein']],).all().filter(chain2_len__gt=filters['min_len'],
-                                                         seq_ID__gt=filters['min_SI'], seq_ID__lt=filters['max_SI'],
-                                                         chain2_len__lt=filters['max_len']).order_by(field)
+    # if filters['exclude_knownCas'] == True:
+    #     objs = filter_known_cas(objs)
 
-    if filters['exclude_knownCas'] == True:
-        objs = filter_known_cas(objs)
-
-    if filters['candidates'] == True:
-        objs = objs.filter(chain2_acc__in=candidates)
-    totalCount = objs.count()
+    # if filters['candidates'] == True:
+    #     objs = objs.filter(chain2_acc__in=candidates)
+    totalCount = len(cas12f1_filter)
     print('-----------', totalCount)
-    requestData = objs[(currentPage-1) * pageSize: currentPage * pageSize]
-    data = []
-    for item in requestData:
-        it = model_to_dict(item)
-        # print(it)
-        cas9 = CASInfo.objects.get(accession=item.chain2_acc)
-        it["protein_name"] = cas9.protein_name
-        it["organism"] = cas9.organism
-        it["genome_genbank"] = cas9.genome_genbank
-        it["protein_genebankID"] = cas9.protein_genebankID
-        it['repeatinfo'] = repeatDt[cas9.genome_genbank]
-        data.append(it)
+    requestData = cas12f1_filter[(currentPage-1) * pageSize: currentPage * pageSize]
+    # data = []
+    # for item in requestData:
+    #     it = model_to_dict(item)
+    #     # print(it)
+    #     cas9 = CASInfo.objects.get(accession=item.chain2_acc)
+    #     it["protein_name"] = cas9.protein_name
+    #     it["organism"] = cas9.organism
+    #     it["genome_genbank"] = cas9.genome_genbank
+    #     it["protein_genebankID"] = cas9.protein_genebankID
+    #     it['repeatinfo'] = repeatDt[cas9.genome_genbank]
+    #     data.append(it)
     # data = serializers.serialize('json', requestData)
     content = {"totalCount": totalCount,
-               "data": data}
+               "data": requestData}
     return JsonResponse(content)
 
-candidates = []
-def parse_info(infoFile = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"):
-    data = []
-    with open(infoFile, 'r') as f:
-        header = next(f).strip('\n').split("\t")
-        header_len = len(header)
-        for li in f:
-            cell = li.split('\n').split("\t")
-            chain1 = cell[0]
-            chain2_acc = cell[0]
-            chain1_len = cell[0]
-            chain2_len = cell[0]
-            cov1 =cell[0]
-            cov2 =cell[0]
-            seq_ID =cell[0]
-            similar =cell[0]
-            alignScore =cell[0]
-            tmScore =cell[0]
-            RMSD =cell[0]
-            dt = {
-
-            }
-
-        data.append(dt)
-    return data
