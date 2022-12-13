@@ -3,13 +3,19 @@ from collections import defaultdict
 from django.http import JsonResponse, FileResponse, Http404
 
 candidates = []
-def parse_info(infoFile = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"):
+infoFile2 = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"
+infoFile ="/dat1/nbt2/proj/22-cas/work/cas12/comparison_1027/pam/results/cas12f-1027_tracer_info_pam.xls"
+def parse_info(infoFile = infoFile):
     data = []
     with open(infoFile, 'r') as f:
         header = next(f).strip('\n').split("\t")
         header_len = len(header)
+        n=0
+        if 'NA' in header:
+            n=1
         for li in f:
             cell = li.strip('\n').split("\t")
+            
             dt = {
             "chain1": cell[0],
             "chain2_acc": cell[1].split("-cf")[0],
@@ -22,18 +28,23 @@ def parse_info(infoFile = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/F
             "alignScore":float(cell[8]),
             "tmScore":float(cell[9]),
             "RMSD":float(cell[10]),
-            "taxid":cell[11],
-            "organism":cell[12],
-            "upPam":cell[13],
-            "upScore": round(float(cell[14]),2),
-            "downPam":cell[15],
-            "downScore": round(float(cell[16]),2)
+            "taxid":cell[11+n],
+            "organism":cell[12+n],
+            "upPam":cell[13+n],
+            "upScore": round(float(cell[14+n]),2),
+            "downPam":cell[15+n],
+            "downScore": round(float(cell[16+n]),2)
             }
-
+            if n==1:
+                dt['tracer'] = cell[11]
+            else:
+                dt['tracer'] ='not known'
             data.append(dt)
     return data
 
 cas12f1 = parse_info()
+cas12f1_2 = parse_info(infoFile2)
+cas12f1.extend(cas12f1_2)
 re_field = re.compile(r'fields.')
 
 def alignFatcatScore(request):
