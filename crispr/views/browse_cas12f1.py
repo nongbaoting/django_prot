@@ -5,6 +5,7 @@ from django.http import JsonResponse, FileResponse, Http404
 candidates = []
 infoFile2 = "/dat1/nbt2/proj/22-cas/work/cas12/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"
 infoFile ="/dat1/nbt2/proj/22-cas/work/cas12/comparison_1027/pam/results/cas12f-1027_tracer_info_pam.xls"
+infoFile_asCluster = "/dat1/nbt2/proj/22-cas/work/cas12/run221104_genbank/length_350_450/clusterWithAscas12f/comparison/result/Fatcat/colabFoldPdb.Fatcat.PAM.xls"
 def parse_info(infoFile = infoFile):
     data = []
     with open(infoFile, 'r') as f:
@@ -44,7 +45,10 @@ def parse_info(infoFile = infoFile):
 
 cas12f1 = parse_info()
 cas12f1_2 = parse_info(infoFile2)
+
+cas12f1_3 = parse_info(infoFile_asCluster)
 cas12f1.extend(cas12f1_2)
+cas12f1.extend(cas12f1_3)
 re_field = re.compile(r'fields.')
 
 def alignFatcatScore(request):
