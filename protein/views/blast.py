@@ -83,13 +83,17 @@ blastLt = []
 
 
 def architecture(request):
-    if request.method == "GET":
-        pageSize = int(request.GET.get('pageSize'))
-        currentPage = int(request.GET.get('currentPage'))
-        myuuid = request.GET.get("uuid")
-        program = request.GET.get("program")
-        order = request.GET.get("order")
-        field = request.GET.get("field")
+    if request.method == "POST":
+        body_unicode = request.body.decode('utf-8')
+        params = json.loads(body_unicode)
+         
+        print(params)
+        pageSize = int(params['pageSize'])
+        currentPage = int(params.get('currentPage'))
+        myuuid = params.get("uuid")
+        program = params.get("program")
+        order = params.get("order")
+        field = params.get("field")
         fileName = ''
         if program == 'jackhmmer':
             fileName = "jackhmmer_archi.json"
@@ -97,6 +101,8 @@ def architecture(request):
             fileName = "psiblast_archi.json"
         elif program == 'BLASTP':
             fileName = "BLASTP_archi.json"
+        print(myuuid, pageSize, currentPage)
+       
         archi_fi =  path.join(blast_outdir, myuuid,  fileName)
         f = open(archi_fi)
         archi_json_content = json.loads(json.load(f))
@@ -104,13 +110,16 @@ def architecture(request):
         archi_json = archi_json_content["architechure"]
         totalSequence = archi_json_content["totalSequence"]
         seqWithAnnotate = archi_json_content["seqWithAnnotate"]
-        totalCount = len(archi_json)
+        #filter
+        dt = filter_archi(params, archi_json,)
+        
+        totalCount = len(dt)
         if order == "descending":
-            archi_json = sorted(archi_json, key=lambda k: k[field], reverse=True)
+            dt = sorted(dt, key=lambda k: k[field], reverse=True)
         else:
-            archi_json = sorted(archi_json, key=lambda k: k[field])
+            dt = sorted(dt, key=lambda k: k[field])
 
-        requestData = archi_json[(currentPage - 1) * pageSize: currentPage * pageSize]
+        requestData = dt[(currentPage - 1) * pageSize: currentPage * pageSize]
         content = []
         for items in requestData:
             protin_id = items['rep_protein_id']
@@ -151,8 +160,6 @@ def res_blast_jackhmmer(request):
         order = body["order"]
         field = body["field"]
         
-        print("pageSize:", pageSize, currentPage)
-
         data['msg'] = 'running'
         resFi, res_id = '', ''
         dataset = body['dataset']
@@ -373,6 +380,53 @@ def filter_jackhmmer(body, data):
             # print(checkDomain)
             if not False in checkDomain:
                 dt.append(mydt)
+    return dt
+
+def filter_archi(body, data):
+    acc_min = float(body['ident']['min'])
+    acc_max = float(body['ident']['max'])
+    target_len_min = float(body['target_len']['min'])
+    target_len_max = float(body['target_len']['max'])
+    print(target_len_max)
+    dt = []
+    print(body)
+    dataset = body['dataset']
+    oldNew = {
+        'cdd_noteCat': 'cdd_notes',
+        'cdd_nameCat': 'cdd_annots'
+    }
+
+    for mydt in data:
+        checkDomain = [True]
+        for domain in body['domains']:
+            if domain['value']:
+
+                # old
+                if dataset == "old" and domain['type'] == "cdd_noteCat":
+                    domain['type'] = 'cdd_notes'
+                if dataset == "old" and domain['type'] == "cdd_nameCat":
+                    domain['type'] = 'cdd_annots'
+
+                isInclude = False
+                dCount = domain['count']
+                keyword = domain['value'].strip()
+                if not domain["exclude"]:
+                    # print("key word", keyword, "count: ", dCount,mydt[ domain['type']] )
+                    ire_key = f"({keyword}.*?)" + "{" + str(dCount) + ",}"
+                    re_k = re.compile(ire_key, re.I)
+                    match = re_k.search(mydt[domain['type']])
+                    if match:
+                        # print('match',match.groups())
+                        isInclude = True
+                else:
+                    # print('aa')
+                    re_exclude = re.compile(keyword, re.I)
+                    if not re_exclude.search(mydt[domain['type']]):
+                        isInclude = True
+                checkDomain.append(isInclude)
+        # print(checkDomain)
+        if not False in checkDomain:
+            dt.append(mydt)
     return dt
 
 
