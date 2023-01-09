@@ -75,7 +75,7 @@ def alignFatcatScore(request):
             if item['chain2_len'] >= float(filters['min_len']) and item['chain2_len'] <= float(filters['max_len']):
                 if item['seq_ID'] >= float(filters['min_SI'] )and item['seq_ID']  <= float(filters['max_SI']):
                     if item['organism']:
-                        if re.search(filters['organism'],  item['organism']):
+                        if re.search(filters['organism'],  item['organism']) or re.search(filters['organism'],item['chain2_acc']):
                             cas12f1_filter.append(item)
                     else:
                         cas12f1_filter.append(item)
