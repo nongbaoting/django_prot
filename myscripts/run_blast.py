@@ -129,7 +129,7 @@ class BLAST:
             self.blastp_archi_json = path.join(self.out_dir, 'BLASTP_archi.json' )
             self.blastp_out = path.join(self.out_dir,  'BLASTP.xml' )
             cmd=f"blastp -db  {dbDir['blast'][self.dbName]} -query  {self.fa_file} -max_target_seqs 100000 \
-            -outfmt 5  -out { self.blastp_out} -num_threads 16 \
+            -outfmt 5 -out { self.blastp_out} -num_threads 16 \
              {self.blastp_params} "
             
             print(f"start {program}: >>>>>>>>>>>>>>> \n\n", cmd)

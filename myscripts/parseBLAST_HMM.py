@@ -120,6 +120,7 @@ class HMMER:
         
         with open(out_archiFi, 'w') as fo_archi:
             json.dump( json.dumps(architecture), fo_archi)
+            
 class BLAST:
     def parse_psiblast(self, xml, outFi,out_archiFi):
         parse_psiblast_xml(xml,outFi,out_archiFi)
@@ -130,7 +131,6 @@ def parse_psiblast_xml(xml,outFi, out_archiFi):
     data = []
     sameDomain =defaultdict(list)
     seqWithAnnotate = 0
-    
 
     with open(xml) as fh:
         records = NCBIXML.parse(fh)

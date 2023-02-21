@@ -54,9 +54,5 @@ class Main:
                 fo.write('\t'.join( [dt['target'], str(dt['target_len']),dt['desc'],blast_out[2],blast_out[3] ]) + '\n')
                   
                 
-                
-
-        
-
 if __name__ == '__main__':
     fire.Fire(Main)
