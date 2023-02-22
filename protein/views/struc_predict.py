@@ -109,26 +109,37 @@ def structure_submit(request):
         data = {'uploadOk': True}
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
+        # TODO: find better way to handle json parsing
+        # with open('tmp_alpha.json', 'w') as fo:
+        #     fo.write(body_unicode)
+        # f = open('tmp_alpha.json')
+        # body =json.loads(f.read() )
+        # print(body['protein_seq'])
+        # print(b2['protein_seq'])
+      
         proj_name = body["proj_name"]
         job_name = reg_W.sub('_', proj_name)
         params = {'alphafold': '',
-                  'RoseTTAFold_mode': body['RoseTTAFold_mode']}
+                  'RoseTTAFold_mode': body['RoseTTAFold_mode'],
+                  'platform': body['platform']
+                  }
 
         print(job_name)
+        # print(request.body.get('protein_seq'))
         seq = body['protein_seq']
-        seq = reg_blank.sub('', seq) + '\n'
+        # seq = reg_blank.sub('', seq) + '\n'
         seq = seq.upper()
         print(seq)
         if reg_fasta.match(seq):
             pass
-        elif reg_plainSeq.match(seq):
-            print('plain')
-            seq = f'>{job_name}\n' + reg_blank.sub('', seq) + '\n'
-            print("new_seq:", seq)
-        elif reg_genebank.match(seq):
-            print('seq is genebank\n', seq)
-            seq = f'>{job_name}\n' + reg_genebankRep.sub('', seq) + '\n'
-            print("new_seq:", seq)
+        # elif reg_plainSeq.match(seq):
+        #     print('plain')
+        #     seq = f'>{job_name}\n' + reg_blank.sub('', seq) + '\n'
+        #     print("new_seq:", seq)
+        # elif reg_genebank.match(seq):
+        #     print('seq is genebank\n', seq)
+        #     seq = f'>{job_name}\n' + reg_genebankRep.sub('', seq) + '\n'
+        #     print("new_seq:", seq)
         else:
             data = {'uploadOk': False}
             return JsonResponse(data)
@@ -143,12 +154,12 @@ def structure_submit(request):
                 params=json.dumps(params)
             )
             # writing file into /training/nong/web/public/protein/static/uploads
-            upload_fa = os.path.join(uploads_47_struct, f'{job_name}.fa')
-            with open(upload_fa, 'w') as f:
-                myfile = File(f)
-                myfile.write(seq)
-                myfile.closed
-                print('complete writing files!')
+            # upload_fa = os.path.join(uploads_47_struct, f'{job_name}.fa')
+            # with open(upload_fa, 'w') as f:
+            #     myfile = File(f)
+            #     myfile.write(seq)
+            #     myfile.closed
+            #     print('complete writing files!')
 
         return JsonResponse(data)
     else:
@@ -165,8 +176,6 @@ def check_proj(request):
     return JsonResponse(data)
 
 # search
-
-
 def search(request):
     if 'gene' in request.GET:
         # 用不上
