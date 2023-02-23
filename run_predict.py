@@ -155,10 +155,9 @@ class RUN:
             roseMode = 'pyrosetta'
             if obj.params is not None:
                 params = json.loads(obj.params)
-                
                 self.alphafold2(faFile,params)   
                 self.roseTTAFold(faFile, params)
-                   
+                
             django.db.close_old_connections()
             obj = SubmitInfo.objects.filter(job_name=self.pre).first()
             obj.run_status = ','.join(status)
