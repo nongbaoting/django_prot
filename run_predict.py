@@ -66,7 +66,7 @@ class RUN:
         print(dat)
 
     def alphafold2(self, faFile, params):
-        if "AlphaFold 2" in params['platform']:
+        if "AlphaFold 2" in params['platform'] or "AlphaFold multimer" in params['platform']:
             model_preset = "monomer"
             if "Multimer" in params['platform']:
                 model_preset = 'multimer'
@@ -79,18 +79,20 @@ class RUN:
             cmd = ". /training/nong/app/miniconda3/etc/profile.d/conda.sh; conda activate alphafold; "
             cmd += f"python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --fasta_paths={faFile} --max_template_date=2022-3-9 \
                 --data_dir=/training/nong/protein/db/alphafold_dat/  --model_preset={model_preset} --output_dir={res_root} 2>{log}; "
-            print("running alphafold 2 =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
+            print(f"running alphafold 2,model_preset:{model_preset} =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
             run = subprocess.run(cmd, shell=True)
             print("alphafold returncode: >>>>>>>>>>>>>>> ", run.returncode)
 
             if run.returncode == 0:
+                if os.path.exists(f'{res_dir}/unrelaxed_model_1_multimer.pdb'):
+                    os.system(f'cp {res_dir}/unrelaxed_model_1_multimer.pdb  {res_dir}/unrelaxed_model_1.pdb')
                 os.system(
-                    f'cd {res_root}; tar -czvf {pre}_alphafold.tar.gz {pre}/rank*pdb unrelaxed_model_1.pdb')
+                    f'cd {res_root}; tar -czvf {pre}_alphafold.tar.gz {pre}/rank*pdb {pre}/unrelaxed_model_1.pdb')
                 os.system(f'mkdir -p {web_dir}/{pre}')
                 os.system(f'cp {res_root}/{pre}_alphafold.tar.gz {web_dir}')
 
                 os.system(
-                    f"cp -r {res_dir}/rank*pdb  unrelaxed_model_1.pdb {web_dir}/{pre}")
+                    f"cp -r {res_dir}/rank*pdb  {res_dir}/unrelaxed_model_1.pdb {web_dir}/{pre}")
             self.alphafold2_code = run.returncode
         else:
             self.alphafold2_code = 1
@@ -154,9 +156,11 @@ class RUN:
             obj.save()
             roseMode = 'pyrosetta'
             if obj.params is not None:
+                print('running.....')
                 params = json.loads(obj.params)
                 self.alphafold2(faFile,params)   
                 self.roseTTAFold(faFile, params)
+                status = [self.alphafold2_code, self.roseTTAFold_code]
                 
             django.db.close_old_connections()
             obj = SubmitInfo.objects.filter(job_name=self.pre).first()

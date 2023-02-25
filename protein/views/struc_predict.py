@@ -84,17 +84,22 @@ def struc_template(request):
                                job_name, 'run_err.log')
         logs = open(run_log).read()
         groups = re_template.findall(logs)
-        data = []
+        data,tmp = [],[]
         for g in groups:
+            if g in tmp: continue
             pdbid, chain = g.split('_')
-            pdbentry = PDBentry.objects.get(IDCODE=pdbid)
-            item = {
-                "CODEID": pdbentry.IDCODE,
-                "Chain":  chain,
-                "HEADER": pdbentry.HEADER,
-                "COMPOUND": pdbentry.COMPOUND
-            }
-            data.append(item)
+            pdbentry = PDBentry.objects.filter(IDCODE=pdbid).first()
+            if pdbentry:
+                print(g)
+                item = {
+                    "CODEID": pdbentry.IDCODE,
+                    "Chain":  chain,
+                    "HEADER": pdbentry.HEADER,
+                    "COMPOUND": pdbentry.COMPOUND
+                }
+                tmp.append(g)
+                data.append(item)
+        # data = list(set(data))
         return JsonResponse({"data": data})
 
 
@@ -154,12 +159,12 @@ def structure_submit(request):
                 params=json.dumps(params)
             )
             # writing file into /training/nong/web/public/protein/static/uploads
-            # upload_fa = os.path.join(uploads_47_struct, f'{job_name}.fa')
-            # with open(upload_fa, 'w') as f:
-            #     myfile = File(f)
-            #     myfile.write(seq)
-            #     myfile.closed
-            #     print('complete writing files!')
+            upload_fa = os.path.join(uploads_47_struct, f'{job_name}.fa')
+            with open(upload_fa, 'w') as f:
+                myfile = File(f)
+                myfile.write(seq)
+                myfile.closed
+                print('complete writing files!')
 
         return JsonResponse(data)
     else:
