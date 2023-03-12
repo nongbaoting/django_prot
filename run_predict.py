@@ -160,7 +160,7 @@ class RUN:
                 params = json.loads(obj.params)
                 self.alphafold2(faFile,params)   
                 self.roseTTAFold(faFile, params)
-                status = [self.alphafold2_code, self.roseTTAFold_code]
+                status = [str(self.alphafold2_code), str(self.roseTTAFold_code)]
                 
             django.db.close_old_connections()
             obj = SubmitInfo.objects.filter(job_name=self.pre).first()
