@@ -86,7 +86,6 @@ def architecture(request):
     if request.method == "POST":
         body_unicode = request.body.decode('utf-8')
         params = json.loads(body_unicode)
-         
         print(params)
         pageSize = int(params['pageSize'])
         currentPage = int(params.get('currentPage'))
@@ -314,9 +313,7 @@ def search(request):
             "data": data}
     return JsonResponse(data, safe=False)
 
-# 逻辑
-
-
+############## 逻辑
 def shift_dict(mydt, newKey, lt, keep_len=10):
     lt.append(newKey)
     if len(lt) > keep_len:

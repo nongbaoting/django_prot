@@ -186,19 +186,3 @@ class PDBentry(models.Model):
     EXPERIMENT_TYPE = models.CharField(max_length=100)
 
 
-# class NrCD(models.Model):
-#     cdd_id = models.ForeignKey(CDD, related_name= "cdd_nrcd", on_delete=models.CASCADE)
-#     protin_id =  models.CharField(max_length=200, db_index=True)
-#     length = models.IntegerField(db_index=True,)
-#     desc  = models.CharField(max_length=1000, db_index=True,)
-#     pssm  = models.CharField(max_length=100, db_index=True,)
-#     start = models.IntegerField(db_index=True,)
-#     end = models.IntegerField(db_index=True,)
-#     evalue = models.CharField(max_length=100, db_index=True,)
-#     biscore = models.CharField(max_length=100, db_index=True,)
-#     cdd_name = models.CharField(max_length=1000,db_index=True,)
-#     cdd_nameCat = models.TextField( )
-#     cdd_idCat = models.TextField( null=True )
-
-#     def __str__(self):
-#         return self.protin_id + "\t" + self.cdd_name
