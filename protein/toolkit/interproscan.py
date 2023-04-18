@@ -9,7 +9,26 @@
 
 import os, sys, fire, re, gzip,json,pickle
 from collections import defaultdict
+# from protein.toolkit.myFunctions import colorSet3D
 #import xmlschema
+
+colorDt = {
+"CDD":'#8DD3C7',
+"FUNFAM":'#FCCDE5',
+"GENE3D":"#27A3B4",
+"PANTHER":"#1B9E77",
+"PFAM":'#FCCDE5',
+"PHOBIUS":'#FFFFB3',
+"PIRSR":'#BEBADA',
+"PROSITE_PATTERNS":'#D9D9D9',
+"PROSITE_PROFILES":'#D9D9D9',
+"SFLD" :"#1B9E77",
+"SMART":'#D95F02',
+"SUPERFAMILY":'#66A61E',
+"TIGRFAM":'#666666',
+"TMHMM":'#8C510A',
+}
+
 class InterproScan:
     def __init__(self):
         self.dt = dict()
@@ -28,7 +47,7 @@ class InterproScan:
         seq_track =  {
             "trackId": "sequenceTrack",
             "trackHeight": 20,
-            "trackColor": "#FEFEFE",
+            # "trackColor": "#FEFEFE",
             "displayType": "sequence",
             "nonEmptyDisplay": True,
             "rowTitle": "SEQUENCE",
@@ -39,82 +58,49 @@ class InterproScan:
                 },
                 ],
             }
-        track_test ={
-            "trackId": 'alternativeTrack2',
-            "rowTitle": 'Alt. n°6',
-            "trackHeight": 25,
-  
-            "displayType": 'composite',
-            "displayConfig": [
-              {
-                "displayType": 'block',
-                "displayColor": '#27A3B4',
-                "displayData": [
-                  {
-                    "begin": 1,
-                    "end": 163,
-                    "gaps": [
-                      { "begin": 34, "end": 69 },
-                      { "begin": 100, "end": 120 },
-                    ],
-                    "displayId": 'alt_6_domain_0',
-                    "sourceId": '#27A3B4',
-                    "featureId":
-                      'Alt. n°6 • Dom. n°1 | Length: 356 [1-34;212-241;423-714] | Auth. position: 1 - 714',
-                  },
-                ],
-              }
-            ]
-        }
-        test2 = {
-            "trackId": 'blockTrack',
-            "trackHeight": 20,
-            "trackColor": '#FEFEFE',
-            "displayType": 'block',
-            "displayColor": '#FF0000',
-            "rowTitle": 'ECOD Domain',
-            "trackData": [
-              {
-                "featureId": 'a',
-                "begin": 1,
-                "end": 163,
-                "color": '#27A3B4',
-               
-              },
-              
-            ],
-          },
+       
         rowConfigData.append(seq_track)
-        # rowConfigData.append(track_test)
-        rowConfigData.append(test2)
         family_track = {
-            "trackId": 'Family_track',
-            "rowTitle": 'Family',
-            "trackHeight": 225,
-            "displayType": 'block',
+            "trackId": "Family_track",
+            "rowTitle": "Family",
+            "trackHeight": 25,
+            "titleFlagColor":"#D83E7C",
+            # "borderWidth": 10,
+            "displayColor":"#D83E7C",
+            "displayType": "block",
             "trackData": [
             
             ]
         }
         domain_track = {
-            "trackId": 'Domain_track',
-            "rowTitle": 'DOMAIN',
-            
-            "displayType": 'block',
+            "trackId": "Domain_track",
+            "rowTitle": "DOMAIN",
+            "displayType": "block",
+            "titleFlagColor":"#27A3B4",
             "trackData": [
             
             ]
         }
         homo_superfamily = {
-            "trackId": 'HOMOLOGOUS_SUPERFAMILY_track',
-            "rowTitle": 'HOMOLOGOUS_SUPERFAMILY',
-           
-            "displayType": 'block',
+            "trackId": "HOMOLOGOUS_SUPERFAMILY_track",
+            "rowTitle": "SUPERFAMILY",
+            "displayType": "block",
+            "titleFlagColor":'#C08423',
+            "trackData": [
+            
+            ]
+        }
+        CONSERVED_SITE = {
+            "trackId": "CONSERVED_SITE_track",
+            "rowTitle": "CONSERVED_SITE",
+            "displayType": "block",
+            "titleFlagColor":'#C08423',
             "trackData": [
             
             ]
         }
         conserved_site = []
+        tracks_num = 0
         for match in matches:
             signature = match["signature"]
             locations = match["locations"]
@@ -127,39 +113,31 @@ class InterproScan:
             locations = match["locations"]
             start,end = locations[0]["start"],locations[0]["end"]
             entry = signature["entry"]
+            tracks_num +=1
+            # print(sig_source)
             block_track =  {
-                "displayType": 'block',
-                "displayColor": '#27A3B4',
-                "displayData": [
-                    {
-                    "begin": start,
-                    "end": end,
-                    "displayId": sig_acc + str(start) + str(end),
-                    "sourceId": '#27A3B4',
-                    "featureId":  sig_acc + str(start) + str(end),
-                    },
-                ],
-                }
-            block_track =  {
-                "featureId": sig_acc,
+                "featureId": f'{sig_source} | {sig_acc} | {sig_desc}',
                 "begin": start,
                 "end": end,
-                "color": '#27A3B4',
-                
-              },
+                "color": colorDt[sig_source],
+              }
             if entry:
                 entry_acc = entry["accession"]
                 entry_name = entry["name"]
                 entry_desc = entry["description"]
                 entry_type =  entry["type"]
+                print(entry_type)
                 if entry_type == "FAMILY":
                     family_track["trackData"].append(block_track)
                 elif entry_type == "DOMAIN":
                     domain_track["trackData"].append(block_track)
                 elif entry_type == "HOMOLOGOUS_SUPERFAMILY":
                     homo_superfamily["trackData"].append(block_track)
+                elif entry_type == "CONSERVED_SITE":
+                    CONSERVED_SITE["trackData"].append(block_track)
 
-        # rowConfigData.extend([family_track,domain_track,homo_superfamily])
+
+        rowConfigData.extend([homo_superfamily,family_track,domain_track,CONSERVED_SITE])
         data= {
             "sequence": sequence,
             "rowConfigData": rowConfigData
