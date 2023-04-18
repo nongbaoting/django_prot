@@ -6,6 +6,7 @@ from .views import login
 from .views import cdd, cdd_search
 from .views import phylogenetic
 from .views import jobQueue
+from .views import domain_pdbe
 
 app_name = 'protein'
 urlpatterns = [
@@ -62,4 +63,7 @@ urlpatterns = [
     path("api/phylo/tree_files/", phylogenetic.tree_files),
     # queue
     path('api/Queue/', jobQueue.jobTable),
+
+    # domain_pdbe
+    path("api/pdbe/interpro/",domain_pdbe.interpro),
 ]

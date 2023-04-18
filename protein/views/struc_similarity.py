@@ -32,6 +32,7 @@ reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
 struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_comparison"
 scopeDomain_dir ="/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain"
+
 ################ view ###############
 
 def aligment(request):
