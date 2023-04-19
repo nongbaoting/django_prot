@@ -7,6 +7,7 @@ from .views import cdd, cdd_search
 from .views import phylogenetic
 from .views import jobQueue
 from .views import domain_pdbe
+from .views.results import tada_like
 
 app_name = 'protein'
 urlpatterns = [
@@ -66,4 +67,8 @@ urlpatterns = [
 
     # domain_pdbe
     path("api/pdbe/interpro/",domain_pdbe.interpro),
+
+    # tadA_like
+    path("api/results/tada_like/", tada_like.interpro),
+    path("api/results/get_pdbFile/", tada_like.get_pdbFile),
 ]

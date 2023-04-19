@@ -6,6 +6,7 @@ def interpro(request):
     fi = "/dat1/nbt2/proj/23-tadA/work/temp/CDKAL_HUMAN.json"
     inter = interproscan.InterproScan()
     data = inter.parse(fi)
+    item = data['CDKAL_HUMAN']
     # rowConfigData = serializers.serialize('json', data)
     
-    return JsonResponse(data)
+    return JsonResponse(item)
