@@ -93,6 +93,15 @@ def to_track(item):
         
         ]
     }
+    others = {
+        "trackId": "COILS_track",
+        "rowTitle": "Others",
+        "displayType": "block",
+        "titleFlagColor":'#01665E',
+        "trackData": [
+        
+        ]
+    }
     conserved_site = []
     tracks_num = 0
     for match in matches:
@@ -139,9 +148,11 @@ def to_track(item):
             elif entry_type == "CONSERVED_SITE":
                 CONSERVED_SITE["trackData"].append(block_track)
                 CONSERVED_SITE["trackData"].append(interpro_track)
+            
+        else:
+           others["trackData"].append(block_track)
 
-
-    rowConfigData.extend([homo_superfamily,family_track,domain_track,CONSERVED_SITE])
+    rowConfigData.extend([homo_superfamily,family_track,domain_track,CONSERVED_SITE,others])
     data= {
         "sequence": sequence,
         "rowConfigData": rowConfigData

@@ -7,7 +7,7 @@ from .views import cdd, cdd_search
 from .views import phylogenetic
 from .views import jobQueue
 from .views import domain_pdbe
-from .views.results import tada_like
+from .views.results import tada_like,csr
 
 app_name = 'protein'
 urlpatterns = [
@@ -71,4 +71,6 @@ urlpatterns = [
     # tadA_like
     path("api/results/tada_like/", tada_like.interpro),
     path("api/results/get_pdbFile/", tada_like.get_pdbFile),
+     path("api/results/csr_like/", csr.interpro),
+    path("api/results/csr_pdbFile/", csr.get_pdbFile),
 ]
