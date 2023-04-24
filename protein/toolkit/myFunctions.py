@@ -33,7 +33,6 @@ def run_cmd(cmd):
     std = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
     return std
 
-
 def create_submit_form(params, res):
     # params['uuid'] = res.tasks_id
     # params['task_status'] = res.status
@@ -137,5 +136,3 @@ def addCDArchiColor(content,colors=colorSet):
         new_arr.append(item)
     
     return new_arr
-
-
