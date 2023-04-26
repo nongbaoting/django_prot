@@ -175,8 +175,9 @@ def structure_submit(request):
 def check_proj(request):
     proj_name = request.GET.get('proj_name')
     pinfo = SubmitInfo.objects.filter(proj_name=proj_name)
+    jinof = SubmitInfo.objects.filter(job_name=proj_name)
     data = {"isExist": 0}
-    if pinfo:
+    if pinfo or jinof:
         data["isExist"] = 1
     return JsonResponse(data)
 
