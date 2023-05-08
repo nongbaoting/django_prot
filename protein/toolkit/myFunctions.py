@@ -41,7 +41,7 @@ def create_submit_form(params, res):
         uuid = res.task_id,
         proj_type =  params.get('proj_type',''),
         email_addr = params.get("email", ''),
-        job_name = params.get("job_name",'default'),
+        job_name = params.get("job_name", 'default'),
         upload_date = datetime.datetime.now(),
         tools= params.get('tools', ''),
         params=params,

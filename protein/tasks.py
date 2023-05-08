@@ -39,3 +39,15 @@ def structure_comparison(self, params):
     print(result)
     # return to results
     return result
+
+
+
+@shared_task(bind=True, name="PDB Domain Annotations")
+def pdb_domain_annotations(self, params):
+    myuuid = self.request.id
+    params['uuid'] = myuuid
+    self.update_state(state='PROGRESS')
+    # TODO add funciton here
+    print(params)
+    results = run_pdb_domain_annotations.domain_annotations(params)
+    return results

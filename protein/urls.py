@@ -7,6 +7,7 @@ from .views import cdd, cdd_search
 from .views import phylogenetic
 from .views import jobQueue
 from .views import domain_pdbe
+from .views import pdb_domain_annotations
 from .views.results import tada_like,csr
 
 app_name = 'protein'
@@ -65,8 +66,11 @@ urlpatterns = [
     # queue
     path('api/Queue/', jobQueue.jobTable),
 
-    # domain_pdbe
+    # domain_annotation
     path("api/pdbe/interpro/",domain_pdbe.interpro),
+    path("api/pdb_domain_annotations/uploadPDB_and_annotation/", pdb_domain_annotations.uploadPDB_and_annotation),
+    path("api/pdb_domain_annotations/parser_results/", pdb_domain_annotations.parser_results),
+    path("api/pdb_domain_annotations/get_pdbFile/", pdb_domain_annotations.get_pdbFile),
 
     # tadA_like
     path("api/results/tada_like/", tada_like.interpro),
