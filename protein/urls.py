@@ -9,6 +9,7 @@ from .views import jobQueue
 from .views import domain_pdbe
 from .views import pdb_domain_annotations
 from .views.results import tada_like,csr
+from .views import test
 
 app_name = 'protein'
 urlpatterns = [
@@ -77,4 +78,7 @@ urlpatterns = [
     path("api/results/get_pdbFile/", tada_like.get_pdbFile),
      path("api/results/csr_like/", csr.interpro),
     path("api/results/csr_pdbFile/", csr.get_pdbFile),
+
+    # test
+    path("api/test/get_pdbFile/", test.get_pdbFile),
 ]
