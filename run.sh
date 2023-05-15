@@ -24,3 +24,8 @@ python ./run_predict.py watchdog > logs/logs.txt 2>&1 &
 conda activate webProt
 cd /dat1/nbt2/server/PROTsim/django_prot
 python manage.py runserver 172.22.148.191:9002
+
+
+# 备份数据库
+# mysqldump -uroot -p  nongbt_db >nongbt_db.sql
+# mysql -uroot -p  nongbt_db <nongbt_db.sql
