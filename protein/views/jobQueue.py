@@ -21,30 +21,30 @@ def jobTable(request):
     taskinfo = TaskResult.objects.all()
     info = SubmitInfoNew.objects.all().order_by('-upload_date')
     totalCount = info.count() 
-    # 分页
-    paginator = Paginator(info, pageSize)
-    print("currentPage, pageSize",currentPage, pageSize)
-    try:
-        books = paginator.page(currentPage)
-    except PageNotAnInteger:
-        books = paginator.page(1)
-    except EmptyPage:
-        books = paginator.page(paginator.num_pages)
+    # # 分页
+    # paginator = Paginator(info, pageSize)
+    # print("currentPage, pageSize",currentPage, pageSize)
+    # try:
+    #     books = paginator.page(currentPage)
+    # except PageNotAnInteger:
+    #     books = paginator.page(1)
+    # except EmptyPage:
+    #     books = paginator.page(paginator.num_pages)
     # data  = serializers.serialize('json',books)
     re_com = re.compile(r"'")
     requestData = info[(currentPage-1) * pageSize : currentPage * pageSize]
     newdata=[]
-    for subItem in books:
+    for subItem in requestData:
         q  = taskinfo.filter(task_id = subItem.uuid).first()
         if not q : continue
+        subItem.task_status = q.status
         if not subItem.running_date or not subItem.completed_date:
             subItem.running_date= q.date_created
             subItem.task_status = q.status
             if q.status == "SUCCESS":
                 subItem.completed_date= q.date_done
                 subItem.result= q.result
-            
-            subItem.save()
+        subItem.save()
 
     data = serializers.serialize('json', requestData)
     data = {"totalCount": totalCount,

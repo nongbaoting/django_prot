@@ -18,6 +18,8 @@ from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from protein.toolkit import myFunctions
+from protein import tasks
+
 
 reg_W = re.compile('\W+')
 reg_fasta = re.compile('^>\w.*\n[\w]{3,}', re.M)
@@ -41,40 +43,23 @@ def psijackhmmer(request):
     status = 200
     if request.method == "POST":
         body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        print(body)
+        params = json.loads(body_unicode)
+        print(params)
         status = 200
-        sequence = turn2fasta(body['sequence'])
-        body['sequence'] = sequence
+        sequence = turn2fasta(params['sequence'])
+        params['sequence'] = sequence
         if(not sequence):
             data['msg'] = "Input sequence error!"
             data['status'] = 201
             return JsonResponse(data)
         data['status'] = status
         file_id = str(uuid.uuid4())
-        tempFileName = os.path.join(blast_indir, file_id + '.json')
-        fafile = os.path.join(blast_indir, file_id + '.fa')
-        SubmitInfoNew.objects.create(
-            uuid=file_id,
-            proj_type="blast",
-            email_addr=body["email"],
-            job_name=body["job_name"],
-            upload_date=datetime.datetime.now(),
-            tools=','.join(body['program']),
-            params=''
-        )
+        params['proj_type'] = "blast"
+        parmas['tools'] =','.join(body['program']),
+        print(params)
+        res = tasks.blast.apply_async(args = [params])
+        myFunctions.create_submit_form(params, res)
 
-        with open(fafile, 'w') as ff:
-            ffa = File(ff)
-            ffa.write(sequence)
-            # json.dump(body, f)
-            # ff.write(sequence)
-            ffa.closed
-
-        with open(tempFileName, 'w') as f:
-            fjson = File(f)
-            fjson.write(body_unicode)
-            fjson.closed
         return JsonResponse(data)
 
 

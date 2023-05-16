@@ -1,5 +1,4 @@
 # Create your tasks here
-from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 import subprocess
 from protein.toolkit import *
@@ -50,4 +49,16 @@ def pdb_domain_annotations(self, params):
     # TODO add funciton here
     print(params)
     results = run_pdb_domain_annotations.domain_annotations(params)
+    return results
+
+from myscripts import run_blast 
+
+@shared_task(bind=True, name="blast")
+def blast(self, params):
+    myuuid = self.request.id
+    params['uuid'] = myuuid
+    self.update_state(state='PROGRESS')
+    # TODO add funciton here
+    print(params)
+    results = run_blast.run_blast(params)
     return results

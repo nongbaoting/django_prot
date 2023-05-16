@@ -1,4 +1,4 @@
-from opcode import opname
+
 import re
 import os
 import time

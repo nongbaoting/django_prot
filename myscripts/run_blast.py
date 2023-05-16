@@ -65,6 +65,8 @@ def myconverter(o):
     if isinstance(o, datetime.datetime):
         return o.__str__()
 
+
+
 # watch dog include to run predict 
 blast_indir = "/dat1/nbt2/proj/21-prot/web/data/uploads/blast"
 blast_outdir ="/dat1/nbt2/proj/21-prot/web/data/res/blast/"
@@ -82,22 +84,31 @@ def watch_dog(mypath=blast_indir):
         observer.stop()
     observer.join()
 
+def run_blast(params):
+    run = BLAST(params)
+    run.run()
 
 class BLAST:
-    def __init__(self, in_json):
-        self.file_id = os.path.basename(in_json).split('.')[0]
-        self.fa_file = os.path.join(os.path.dirname(in_json), f"{self.file_id}.fa")
+    def __init__(self, params):
+        # self.file_id = os.path.basename(in_json).split('.')[0]
+        # self.fa_file = os.path.join(os.path.dirname(in_json), f"{self.file_id}.fa")
+        # self.out_dir = path.join(blast_outdir, self.file_id)
+        self.file_id = params['uuid']
+        
         self.out_dir = path.join(blast_outdir, self.file_id)
+        self.fa_file = os.path.join(self.out_dir, f"{self.file_id}.fa")
+        print(params['job_name'], self.out_dir)
         os.system("mkdir -p "+ self.out_dir)
-        f = open(in_json)
-        dt = json.load(f)
-        # print(in_json)
+       
+        with open(self.fa_file, 'w') as fo:
+            fo.write(params['sequence'])
+        dt = params
+      
         self.jackhmmer_params = f"-N { dt['jackhmmer_iter']} " + dt['jackhmmer_advance']
         self.psiblast_params = f"-num_iterations { dt['psiblast_iter']} " + dt['psiblast_advance']
         self.blastp_params = ''
         self.dbName = dt['db']
         self.programs = dt['program']
-        f.close()
  
     def run(self):
         from protein.models import SubmitInfoNew
