@@ -122,9 +122,10 @@ DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "nongbt_db",
-        "USER": "nongbt",
+        "USER": "root",
         "PASSWORD": "NBT9175.814@lys628",
-        "HOST": "172.22.148.150",
+        "HOST": "localhost",
+        #"HOST": "172.22.48.191",
         "PORT": "3306",
         # 'OPTIONS': {
 
