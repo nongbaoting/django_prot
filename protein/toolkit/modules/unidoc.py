@@ -14,20 +14,18 @@ colorSet3D = [
     # "#C08423",
     "#D83E7C",
     "#1B9E77",
-
-
-'#FCCDE5',
-  '#D9D9D9',
-  '#BC80BD',
-  '#CCEBC5',
-  '#FFED6F',
-  '#1B9E77',
-  '#D95F02',
-  '#7570B3',
-  '#E7298A',
-  '#66A61E',
-  '#E6AB02',
-  '#A6761D',
+    '#FCCDE5',
+    '#D9D9D9',
+    '#BC80BD',
+    '#CCEBC5',
+    '#FFED6F',
+    '#1B9E77',
+    '#D95F02',
+    '#7570B3',
+    '#E7298A',
+    '#66A61E',
+    '#E6AB02',
+    '#A6761D',
 ]
 
 def scanAndFind_pattern(mydir, mypattern):
@@ -47,7 +45,6 @@ def domain2track(domains):
         "displayType": 'composite',
         "trackHeight": 25,
         "displayConfig": [
-
         ]
     }
     for i,domain in enumerate(domains):
@@ -107,7 +104,6 @@ class Unidoc:
         seq_id = fileName.split('.')[0] + f':{self.chain}'
         seq  = str(self.fasta[seq_id].seq)
         domains = open(self.unidoc_out).read().strip().split(',')
-        
         rowConfigData = [
             {
             "trackId": 'sequenceTrack',
@@ -135,6 +131,49 @@ class Unidoc:
         
         fo = open(f'{self.work_dir}/unidoc.track.json','w')
         json.dump(json.dumps(dt), fo)
+    def parse2protvista(self,):
+        dt = {}
+        sep_reg = re.compile(f".pdb|.cif")
+        fileName = os.path.basename(self.pdbfile)
+        entry_id = sep_reg.split(fileName)[0]
+        seq_id = fileName.split('.')[0] + f':{self.chain}'
+        seq  = str(self.fasta[seq_id].seq)
+        domains = open(self.unidoc_out).read().strip().split(',')
+        
+        # fragments is domain loctions
+        fragments = []
+        d_num = 0
+        for i,domain in enumerate(domains):
+            units = domain.split('/')
+            for j, domain_units in enumerate(units):
+                locs = [int(ii.strip()) for ii in domain_units.split('~')]
+                domain_start,domain_end = locs
+                fragment_ = {
+                    "start": domain_start,
+                    "end": domain_end, 
+                    "tooltipContent": f"Type: domain {i}:{j}<br>Range: {domain_start} - {domain_end}", 
+                    "color": colorSet3D[d_num], 
+                    }
+                d_num +=1
+                fragments.append(fragment_)
+
+            
+        data_subtrack = {
+                        "accession": 'Unidoc' ,
+                        "type": 'Unidoc Domain',
+                        "label": "Unidoc",
+                        "labelTooltip":"Unidoc Domain",
+                        "locations": [{"fragments":fragments}
+                            
+                        ]
+                    }
+        track = {
+           "label": 'Unidoc Domains',
+           "labelType": 'text',
+           "data":[data_subtrack]
+
+        }
+        return track
 
     def parseFasta(self):
         self.fasta = SeqIO.to_dict(SeqIO.parse(self.FaFi, 'fasta'))
@@ -151,6 +190,7 @@ def run_unidoc(pdbfile, chain, work_dir):
     unidoc.run()
     unidoc.parseFasta()
     unidoc.parse_unidoc()
+    return unidoc.parse2protvista()
 
 class Main:
     def run(self,pdbfile, chain, work_dir):

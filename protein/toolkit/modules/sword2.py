@@ -77,6 +77,27 @@ def domain2track(domain_index,domains):
         domain_track["displayConfig"].append(displayConfig)
     return domain_track
 
+def domain2protvistaFragments(domain_index,domains):
+    re_cc = re.compile(r';')
+    re_seg = re.compile(r'-')
+    fragments = []
+
+    for i,domain in enumerate(domains):
+        units = domain.split(';')
+        for domain_units in units:
+            locs = [int(ii.strip()) for ii in domain_units.split('-')]
+            domain_start,domain_end = locs
+            fragment_ = {
+                "start": domain_start,
+                "end": domain_end, 
+                "tooltipContent": f"Type: domain {i}<br>Range: {domain_start} - {domain_end}", 
+                "color": colorSet3D[i], 
+                }
+
+            fragments.append(fragment_)
+    return {"fragments":fragments}
+
+
 class Sword2:
     def __init__(self,):
         self.suffix = 'sword.txt'
@@ -84,16 +105,23 @@ class Sword2:
         self.sep_reg = re.compile(f"/")
         self.fasta = {}
     
-    def scandir(self,mydir,outFi):
+    def scandir(self,mydir,outFi,outFiProtvista):
         entries = scanAndFind_pattern(mydir, self.suffix_reg)
         dt = {}
+        dt_pt = {}
         for entry in entries:
             entry_id = self.sep_reg.split(entry.path)[-2].split('_')[0]
             seq_id = entry_id +':A'
             data = self.parse(entry.path, seq_id)
+            data_pt = self.parse2protvista(entry.path, seq_id)
             dt[entry_id] = data
+            dt_pt[entry_id] = data_pt
         fo = open(outFi,'w')
         json.dump(json.dumps(dt), fo)
+        fo.close()
+        with open(outFiProtvista, 'w') as fp:
+            json.dump(json.dumps(dt_pt), fp)
+        return dt_pt
     def parse(self, Fi, seq_id):
         seq  = str(self.fasta[seq_id].seq)
         rowConfigData = [
@@ -110,7 +138,7 @@ class Sword2:
                 "value":seq,
                 },
                 ],
-            }
+                }
             ]
         re_numbers = re.compile(r'^\d')
         with open(Fi, "r") as f:
@@ -128,6 +156,36 @@ class Sword2:
                         "rowConfigData": rowConfigData
                     }
         return data
+    
+    def parse2protvista(self, Fi, seq_id):
+        seq  = str(self.fasta[seq_id].seq)
+        track = {
+           "label": 'Sword2 Domains',
+           "labelType": 'text',
+           "data":[]
+
+        }
+        re_numbers = re.compile(r'^\d')
+        with open(Fi, "r") as f:
+            num = 0
+            for line in f:
+                if re_numbers.match(line):
+                    print(line)
+                    domain_num,min_len,boundary,ave_k,quality,_ = line.strip('\n').split('|')
+                    domains = boundary.strip().split(' ')
+                    fragments = domain2protvistaFragments(num,domains)
+                    data_subtrack = {
+                        "accession": 'sword' + str(num),
+                        "type": 'Sword2 Domain',
+                        "label": "Archi. " + str(num),
+                        "labelTooltip":"Sword2 Archi " + str(num),
+                        "locations": [fragments]
+                    }
+                    num +=1
+                    track['data'].append(data_subtrack)
+                    
+        return track
+
 
     def parseFasta(self,FaFi):
         self.fasta = SeqIO.to_dict(SeqIO.parse(FaFi, 'fasta'))
@@ -148,7 +206,9 @@ def run_sword2(pdbfile,chain, work_dir):
     sword2.run(pdbfile_ln,chain,work_dir)
     sword2.parseFasta(fasta_seq)
     outFi = os.path.join(work_dir,'sword2.track.json')
-    sword2.scandir(work_dir,outFi)
+    outFiProtvista = os.path.join(work_dir,'sword2.protvistaTrack.json')
+    sword2_track = sword2.scandir(work_dir,outFi,outFiProtvista)
+    return  sword2_track,str(sword2.fasta['upload:A'].seq)
 
 class Main:
     def run(self,pdbfile,chain,work_dir):

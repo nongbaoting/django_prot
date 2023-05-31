@@ -60,20 +60,28 @@ def parser_results(request):
     request_type  = request.GET.get('request_type')
     if request_type == "interpro":
         resFi = os.path.join(result_dir, myuuid, "interpro.track.json")
-        f = open(resFi)
-        jsonRes = json.loads(json.load(f))
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
         return JsonResponse(jsonRes['upload'],safe=False)
     elif request_type == "unidoc":
         resFi = os.path.join(result_dir, myuuid, "unidoc.track.json")
-        f = open(resFi)
-        jsonRes = json.loads(json.load(f))
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
         return JsonResponse(jsonRes['upload'],safe=False)
     elif request_type == "sword2":
         resFi = os.path.join(result_dir, myuuid, "sword2.track.json")
         print(request_type, resFi)
-        f = open(resFi)
-        jsonRes = json.loads(json.load(f))
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
         return JsonResponse(jsonRes['upload'],safe=False)
+    elif request_type == "protvista":
+        resFi = os.path.join(result_dir, myuuid, "protvistData.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            # jsonRes = json.loads(json.load(f))
+        print(jsonRes)
+        return JsonResponse(jsonRes,safe=False)
     else:
         raise Exception("Unknown")
 
