@@ -9,7 +9,7 @@
 
 import os, sys, fire, re, gzip,json,pickle
 from collections import defaultdict
-
+from .myFunctions import colorSet3D
 
 colorDt = {
 "CDD":'#8DD3C7',
@@ -34,6 +34,8 @@ colorDt = {
 "MOBIDB_LITE":'#F6E8C3',
 "PRINTS":'#DFC27D',
 }
+
+#### to rcsvFV
 def to_track(item):
     sequence = item["sequence"]
     matches = item["matches"]
@@ -158,7 +160,7 @@ def to_track(item):
         "rowConfigData": rowConfigData
         }
     return data
-from collections import defaultdict
+
 class InterproScan:
     def __init__(self):
         self.dt = dict()

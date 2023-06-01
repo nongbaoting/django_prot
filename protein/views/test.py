@@ -1,5 +1,5 @@
 from django.http import JsonResponse, HttpResponse, FileResponse, Http404
-from protein.toolkit import interproscan
+from protein.toolkit.modules import interproscan
 from django.core import serializers
 import json,os
 def get_pdbFile(request):
