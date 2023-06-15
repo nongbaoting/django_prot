@@ -124,8 +124,8 @@ DATABASES = {
         "NAME": "nongbt_db",
         "USER": "root",
         "PASSWORD": "NBT9175.814@lys628",
-        "HOST": "localhost",
-        #"HOST": "172.22.48.191",
+        # "HOST": "localhost",
+        "HOST": "172.22.148.191",
         "PORT": "3306",
         # 'OPTIONS': {
 

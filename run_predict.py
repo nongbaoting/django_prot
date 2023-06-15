@@ -14,6 +14,7 @@ import fire
 import subprocess
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from protein.toolkit.modules import PDB
 import time
 import datetime
 import json
@@ -81,18 +82,21 @@ class RUN:
                 --data_dir=/training/nong/protein/db/alphafold_dat/  --model_preset={model_preset} --output_dir={res_root} 2>{log}; "
             print(f"running alphafold 2,model_preset:{model_preset} =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
             run = subprocess.run(cmd, shell=True)
+            # TODO change to myscripts
+            #os.system(f"python /dat1/nbt2/pipe/21-prot/bin/PDB.py scanAF_pdb2cif {res_dir}")
+            pdb2cif = PDB.Main()
+            pdb2cif.scanAF_pdb2cif(res_dir)
             print("alphafold returncode: >>>>>>>>>>>>>>> ", run.returncode)
 
             if run.returncode == 0:
-                if os.path.exists(f'{res_dir}/unrelaxed_model_1_multimer.pdb'):
-                    os.system(f'cp {res_dir}/unrelaxed_model_1_multimer.pdb  {res_dir}/unrelaxed_model_1.pdb')
-                os.system(
-                    f'cd {res_root}; tar -czvf {pre}_alphafold.tar.gz {pre}/rank*pdb {pre}/unrelaxed_model_1.pdb')
+                if os.path.exists(f'{res_dir}/unrelaxed_model_1_multimer.cif'):
+                    os.system(f'cp {res_dir}/unrelaxed_model_1_multimer.cif  {res_dir}/unrelaxed_model_1.cif')
+                os.system(f'cd {res_root}; tar -czvf {pre}_alphafold.tar.gz {pre}/rank*cif {pre}/unrelaxed_model_1.cif')
                 os.system(f'mkdir -p {web_dir}/{pre}')
                 os.system(f'cp {res_root}/{pre}_alphafold.tar.gz {web_dir}')
 
                 os.system(
-                    f"cp -r {res_dir}/rank*pdb  {res_dir}/unrelaxed_model_1.pdb {web_dir}/{pre}")
+                    f"cp -r {res_dir}/rank*cif  {res_dir}/unrelaxed_model_1.cif {web_dir}/{pre}")
             self.alphafold2_code = run.returncode
         else:
             self.alphafold2_code = 1
@@ -130,8 +134,8 @@ class RUN:
                 else:
                     # end to end
                     os.system(
-                        f'cd {res_root}; tar -czvf {pre}_roseTTAFold.tar.gz {pre}/t000_.e2e.pdb')
-                    os.system(f'cp -r {res_dir}/t000_.e2e.pdb {web_dir}/{pre}/')
+                        f'cd {res_root}; tar -czvf {pre}_roseTTAFold.tar.gz {pre}/t000_.e2e.cif')
+                    os.system(f'cp -r {res_dir}/t000_.e2e.cif {web_dir}/{pre}/')
 
                 os.system(f'cp -r  {res_root}/{pre}_roseTTAFold.tar.gz {web_dir}')
 
