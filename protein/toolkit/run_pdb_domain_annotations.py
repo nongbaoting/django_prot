@@ -3,7 +3,7 @@ import subprocess
 from os import path
 from collections import defaultdict
 from protein.models import *
-from .modules import unidoc,sword2
+from .modules import unidoc,sword2,bindingSites
 
 def domain_annotations(params):
     '''
@@ -13,13 +13,18 @@ def domain_annotations(params):
     pdbfile = params['pdbfile']
     chain = params['chain']
 
+    # run unidoc,sword2
     unidoc_track = unidoc.run_unidoc(pdbfile, chain, work_dir)
     sword2_track,sequence = sword2.run_sword2(pdbfile, chain, work_dir)
-     
+    
+    # run PPI py_scannet
+    ppi_track = bindingSites.run_ppi(pdbfile,work_dir)
+
     protvistaTrackFi = os.path.join(work_dir,"protvistData.json")
     tracks = []
     tracks.append(sword2_track['upload'])
     tracks.append(unidoc_track)
+    tracks.append(ppi_track)
     protvistaData = {
         "displayNavigation": True,
         "displaySequence": True,
