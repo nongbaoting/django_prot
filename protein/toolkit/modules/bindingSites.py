@@ -29,6 +29,59 @@ colorSet3D = [
 ]
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcol
+import matplotlib.cm as cm
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+def map_color(value, min_value, max_value):
+    normalized_value = (value - min_value) / (max_value - min_value)
+    cmap = plt.cm.get_cmap('RdYlGn')  # 选择色谱，这里使用红黄绿色谱
+    rgba = cmap(normalized_value)
+    red = int(rgba[0] * 255)
+    green = int(rgba[1] * 255)
+    blue = int(rgba[2] * 255)
+    color = (red, green, blue)
+    hex_color = '#%02x%02x%02x' % color
+    return hex_color
+
+# min_value = float(input("请输入最小值："))
+# max_value = float(input("请输入最大值："))
+# number = float(input("请输入一个数字："))
+
+# color = map_color(number, min_value, max_value)
+# print("对应的颜色为：", color)
+
+
+def color_pick(c):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcol
+    import matplotlib.cm as cm
+    start_time = 0
+    end_time = 1
+
+    # Generate some dummy data.
+    tim = range(start_time,end_time)
+
+    # Make a user-defined colormap.
+    cm_br = mcol.LinearSegmentedColormap.from_list("MyCmapName",["b","r"])
+
+    # Make a normalizer that will map the time values from
+    # [start_time,end_time+1] -> [0,1].
+    cnorm = mcol.Normalize(vmin=min(tim),vmax=max(tim))
+
+    # Turn these into an object that can be used to map time values to colors and
+    # can be passed to plt.colorbar().
+    cpick = cm.ScalarMappable(norm=cnorm,cmap=cm_br)
+    cpick.set_array([])
+    a = cpick.to_rgba(0.5)
+
+    return mcol.to_hex(a)
+
 class ScanNet:
 
     def __init__(self,pdbFile,root_dir):
@@ -48,7 +101,7 @@ class ScanNet:
         outCsv = outdir + f'predictions_{self.name}.csv'
         outPdb = outdir + f'annotated_{self.name}.pdb'
         track = {
-           "label": 'Protein Binding Sites',
+           "label": 'PPI Sites',
            "labelType": 'text',
            "data":[]
 
@@ -57,14 +110,14 @@ class ScanNet:
 
         with open(outCsv,'r') as f:
             next(f)
-            for line in f:
+            for index, line in enumerate(f):
                 Model,Chain,Residue_Index,Sequence,prob = line.strip().split(',')
                 if float(prob) >0.5:
                     fragment_ = {
-                        "start": int(Residue_Index),
-                        "end": int(Residue_Index), 
-                        "tooltipContent": f"AA: {Sequence},Score: {prob}", 
-                        "color": colorSet3D[0], 
+                        "start": index + 1,
+                        "end": index + 1, 
+                        "tooltipContent": f"Position: {Residue_Index}, Seq: {Sequence}, Score: {prob}", 
+                        "color": map_color(float(prob),0,1)
                     }
                     fragments.append(fragment_)
 
@@ -72,9 +125,9 @@ class ScanNet:
         fragments_dt = {"fragments":fragments}
         data_subtrack = {
                         "accession": 'ScanNet' ,
-                        "type": 'ScanNet',
-                        "label": "ScanNet " ,
-                         "shape": 'circle',
+                        "type": 'PPI',
+                        "label": "ScanNet" ,
+                        "shape": 'circle',
                         "labelTooltip":"ScanNet PPI sites" ,
                         "locations": [fragments_dt]
                     }
@@ -93,7 +146,7 @@ def run_ppi(pdbFile,root_dir):
 class Main:
     def run(self,pdbFile,root_dir):
         import json
-        track = run_ppi(pdbFile,root_dir)
+        track = run_ppi(pdbFile, root_dir)
         with open('track.json', 'w') as fp:
             json.dump(json.dumps(track), fp)
 

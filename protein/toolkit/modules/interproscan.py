@@ -7,9 +7,9 @@
 # @Version         : 1.0.0
 # @Description     : 
 
-import os, sys, fire, re, gzip,json,pickle
+import os, sys, fire, re, gzip,json,pickle,subprocess
 from collections import defaultdict
-from .myFunctions import colorSet3D
+# from .myFunctions import colorSet3D
 
 colorDt = {
 "CDD":'#8DD3C7',
@@ -164,12 +164,16 @@ def to_track(item):
 class InterproScan:
     def __init__(self):
         self.dt = dict()
-       
+    
+    def run(self,work_dir):
+        cmd = f"cd {work_dir};interproscan.sh -i seqs.fasta -f tsv, json -dp -cpu 4"
+        subprocess.run(cmd, shell=True)
     def parse(self, jsonFi):
         with open(jsonFi, "r") as f:
             self.dt = json.loads(f.read())
             # print(self.dt)
         return self.interpro2rcsb()
+
     def interpro2rcsb(self):
         results =self.dt["results"]
         dt =defaultdict(dict)
@@ -180,12 +184,26 @@ class InterproScan:
         
         return dt
 
+
+def run_interproscan(work_dir):
+    inter = InterproScan()
+    inter.run(work_dir)
+    resJsonFi = os.path.join(work_dir, "seqs.fasta.json")
+    rowConfigData = inter.parse(resJsonFi)
+    outFi = os.path.join(work_dir,  "interpro.track.json")
+    with open(outFi,'w') as fo:
+        json.dump(json.dumps(rowConfigData), fo)
+
+
+
+
 class Main:
     def interproscan(self,fi="CDKAL_HUMAN.json"):
         inter = InterproScan()
         rowConfigData = inter.parse(fi)
        
-       
+    def runInDjango(self, work_dir):
+        run_interproscan(work_dir)
 
 if __name__ == "__main__":
     fire.Fire(Main)

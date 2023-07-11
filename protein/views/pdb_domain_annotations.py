@@ -62,7 +62,7 @@ def parser_results(request):
         resFi = os.path.join(result_dir, myuuid, "interpro.track.json")
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-        return JsonResponse(jsonRes['upload'],safe=False)
+        return JsonResponse(jsonRes['upload:A'],safe=False)
     elif request_type == "unidoc":
         resFi = os.path.join(result_dir, myuuid, "unidoc.track.json")
         with open(resFi) as f:

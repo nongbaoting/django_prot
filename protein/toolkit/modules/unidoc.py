@@ -131,6 +131,7 @@ class Unidoc:
         
         fo = open(f'{self.work_dir}/unidoc.track.json','w')
         json.dump(json.dumps(dt), fo)
+        fo.close()
     def parse2protvista(self,):
         dt = {}
         sep_reg = re.compile(f".pdb|.cif")
