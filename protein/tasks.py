@@ -62,3 +62,13 @@ def blast(self, params):
     print(params)
     results = run_blast.run_blast(params)
     return results
+
+@shared_task(bind=True, name="Structure prediction")
+def structure_prediction(self, params):
+    myuuid = self.request.id
+    params['uuid'] = myuuid
+    self.update_state(state='PROGRESS')
+    # TODO add funciton here
+    print(params)
+    results = run_structure_prediction.predict(params)
+    return results

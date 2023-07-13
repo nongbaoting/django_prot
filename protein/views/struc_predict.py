@@ -13,6 +13,7 @@ from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 from django.core import serializers
 import datetime
 # Create your views here.
+from protein.toolkit import *
 
 reg_W = re.compile('\W+')
 reg_fasta = re.compile('^>\w.*\n[\w]{3,}', re.M)
@@ -171,6 +172,26 @@ def structure_submit(request):
         context = {'fasta': 'hello world'}
         return JsonResponse(context)
 
+from protein import tasks
+structure_prediction_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_prediction/"
+def submit_new(request):
+    data = {}
+    status = 200
+    if request.method == "POST":
+        params = json.loads(request.body.decode('utf-8'))
+        print(params)
+        protein_seq = myFunctions.turn2fasta(params['protein_seq'])
+        params['protein_seq'] = protein_seq
+        nucleic_seq = myFunctions.turn2fasta(params['nucleic_seq'])
+        params['nucleic_seq'] = nucleic_seq
+        
+        # set proj_type, dir, task
+        params['proj_type'] = "Structure Prediction"
+        params['work_dir'] = structure_prediction_dir
+        res = tasks.structure_prediction.apply_async(args = [params])
+        myFunctions.create_submit_form(params, res)
+
+        return JsonResponse(data)
 
 def check_proj(request):
     proj_name = request.GET.get('proj_name')

@@ -18,8 +18,8 @@ urlpatterns = [
     # Structure predict
     path('get_token', struc_predict.get_token, name="get_token"),
     path('', struc_predict.index, name='index'),
-    path('predict/structure_submit/',
-         struc_predict.structure_submit, name="structure_submit"),
+    path('predict/structure_submit/', struc_predict.structure_submit, name="structure_submit"),
+     path('predict/structure_submit_new/', struc_predict.submit_new, name="structure_submit_new"),
     path('predict/structure/result',
          struc_predict.structure_result, name="structure_result"),
     path('predict/structure/result', struc_predict.alphafold2, name="alphafold2"),
