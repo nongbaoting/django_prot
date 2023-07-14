@@ -19,7 +19,7 @@ urlpatterns = [
     path('get_token', struc_predict.get_token, name="get_token"),
     path('', struc_predict.index, name='index'),
     path('predict/structure_submit/', struc_predict.structure_submit, name="structure_submit"),
-     path('predict/structure_submit_new/', struc_predict.submit_new, name="structure_submit_new"),
+     
     path('predict/structure/result',
          struc_predict.structure_result, name="structure_result"),
     path('predict/structure/result', struc_predict.alphafold2, name="alphafold2"),
@@ -29,6 +29,12 @@ urlpatterns = [
     path("api/structure/getFile/",
          struc_predict.struc_getFile, name='struct_getFile'),
     path("api/structure/getTemplate/", struc_predict.struc_template),
+
+    # new
+     path('predict/structure_submit_new/', struc_predict.submit_new),
+     path("api/structure/getFile_new/",    struc_predict.getFile),
+     path('api/structure/result_new/',  struc_predict.get_result),
+
 
     # search
     path('search/', struc_predict.search, name="search"),

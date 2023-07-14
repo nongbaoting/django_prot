@@ -21,6 +21,63 @@ reg_plainSeq = re.compile('^[A-Za-z]+$', re.M)
 reg_genebank = re.compile('^\d+\s+[A-Z]+\s+', re.I)
 reg_genebankRep = re.compile('\d+|\s+')
 reg_blank = re.compile('\d+|\s+')
+
+# new
+
+from protein import tasks
+structure_prediction_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_prediction/"
+def submit_new(request):
+    data = {}
+    status = 200
+    if request.method == "POST":
+        params = json.loads(request.body.decode('utf-8'))
+        print(params)
+        
+        # set proj_type, dir, task
+        params['job_name'] =  reg_W.sub( '_',params['proj_name'])
+        params['proj_type'] = "Structure Prediction"
+        params['work_dir'] = structure_prediction_dir
+        res = tasks.structure_prediction.apply_async(args = [params])
+        myFunctions.create_submit_form(params, res)
+        data['status'] = status
+        return JsonResponse(data)
+
+
+def get_result(request):
+    if request.method == "GET":
+        myuuid = request.GET.get('uuid')
+        jsonFi = os.path.join(structure_prediction_dir, myuuid, 'params.json')
+        with open(jsonFi, 'r') as f:
+            params = json.loads(json.load(f))
+        return JsonResponse(params)
+
+
+def getFile(request):
+    if request.method == "GET":
+        filetype = request.GET.get('filetype')
+        program = request.GET.get('program')
+        myuuid = request.GET.get('uuid')
+        filename = request.GET.get('filename')
+        job_name = request.GET.get("job_name")
+        # TODO新版 job_name 改为uuid
+        filePath = ''
+        if filetype == "file":
+            filePath = os.path.join(structure_prediction_dir, myuuid, program, filename)
+        if filetype == "tar":
+            filePath = os.path.join(structure_prediction_dir, myuuid, f'{job_name}.{program}.tgz')
+            print(filePath)
+        if os.path.exists(filePath):
+            print("file ok: ", filePath)
+            fo = open(filePath, 'rb')
+            return FileResponse(fo)
+        else:
+            print("file not found: " + filePath)
+            raise Http404
+
+##################################### old
+
+
+
 uploads_47 = "/training/nong/web/data/uploads/"
 uploads_47_struct = "/training/nong/web/data/uploads/structure_predict/"
 
@@ -172,26 +229,7 @@ def structure_submit(request):
         context = {'fasta': 'hello world'}
         return JsonResponse(context)
 
-from protein import tasks
-structure_prediction_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_prediction/"
-def submit_new(request):
-    data = {}
-    status = 200
-    if request.method == "POST":
-        params = json.loads(request.body.decode('utf-8'))
-        print(params)
-        protein_seq = myFunctions.turn2fasta(params['protein_seq'])
-        params['protein_seq'] = protein_seq
-        nucleic_seq = myFunctions.turn2fasta(params['nucleic_seq'])
-        params['nucleic_seq'] = nucleic_seq
-        
-        # set proj_type, dir, task
-        params['proj_type'] = "Structure Prediction"
-        params['work_dir'] = structure_prediction_dir
-        res = tasks.structure_prediction.apply_async(args = [params])
-        myFunctions.create_submit_form(params, res)
 
-        return JsonResponse(data)
 
 def check_proj(request):
     proj_name = request.GET.get('proj_name')

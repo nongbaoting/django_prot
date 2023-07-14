@@ -63,10 +63,15 @@ class Main:
         metric_value=[]
         model_id=[]
         ordinal_id=[]
-
+        label_entity_id = 0
+        label_asym_id_each = ''
         for idx, asym_id in enumerate(cif_dict['my_structure']['_atom_site']['label_asym_id']):
             entity_id = chains_entity[asym_id]
-            cif_dict['my_structure']['_atom_site']['label_entity_id'][idx] =1
+            if cif_dict['my_structure']['_atom_site']['label_asym_id'][idx] != label_asym_id_each:
+                label_asym_id_each =  cif_dict['my_structure']['_atom_site']['label_asym_id'][idx]
+                label_entity_id +=1
+            # cif_dict['my_structure']['_atom_site']['label_entity_id'][idx] = str(label_entity_id)
+            cif_dict['my_structure']['_atom_site']['label_entity_id'][idx] = 1
             label_asym_id.append(cif_dict['my_structure']['_atom_site']['label_asym_id'][idx])
             label_comp_id.append(cif_dict['my_structure']['_atom_site']['label_comp_id'][idx])
             label_seq_id.append(cif_dict['my_structure']['_atom_site']['label_seq_id'][idx])

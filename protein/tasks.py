@@ -63,7 +63,7 @@ def blast(self, params):
     results = run_blast.run_blast(params)
     return results
 
-@shared_task(bind=True, name="Structure prediction")
+@shared_task(bind=True, name="Structure prediction", concurrency=1)
 def structure_prediction(self, params):
     myuuid = self.request.id
     params['uuid'] = myuuid
