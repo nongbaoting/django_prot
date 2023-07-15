@@ -61,34 +61,35 @@ class AlphaFold2:
         self.init_cmd = f'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;cd {self.work_dir};'
     
     def run(self, faFile):
+        status = 1
         params = self.params
-        if "AlphaFold 2" in params['platform'] or "AlphaFold multimer" in params['platform']:
+        if "AlphaFold2" in params['platform'] or "AlphaFold multimer" in params['platform']:
             model_preset = "monomer"
             if "Multimer" in params['platform']:
                 model_preset = 'multimer'
             
             log =self.work_dir + '/run_err.log'
             # cmd = ". /training/nong/app/miniconda3/etc/profile.d/conda.sh; conda activate alphafold; "
-            cmd = self.init_cmd + f'conda run -n alphafold python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 1 --fasta_paths={faFile} --max_template_date=2023-3-9 \
+            cmd = self.init_cmd + f'conda run -n alphafold python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 0 --fasta_paths={faFile} --max_template_date=2023-3-9 \
                 --data_dir=/training/nong/protein/db/alphafold_dat/  --model_preset={model_preset} --output_dir={self.outdir} 2>{log}"'
             print(f"running alphafold 2,model_preset:{model_preset} =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
             run = subprocess.run(cmd, shell=True)
            
             pdb2cif = PDB.Main()
-            pdb2cif.scanAF_pdb2cif(res_dir)
+            pdb2cif.scanAF_pdb2cif(self.outdir)
             print("alphafold returncode: >>>>>>>>>>>>>>> ", run.returncode)
 
             if run.returncode == 0:
-                if os.path.exists(f'{self.outdir}/unrelaxed_model_1_multimer.cif'):
-                    os.system(f'cp {self.outdir}/unrelaxed_model_1_multimer.cif  {self.model_dir}/unrelaxed_model_1.cif')
-                os.system(f"cp -r {self.outdir}/rank*   {self.model_dir}/")
+                if os.path.exists(f'{self.outdir}/protein/unrelaxed_model_1_multimer.cif'):
+                    os.system(f'cp {self.outdir}/protein/unrelaxed_model_1_multimer.cif  {self.model_dir}/unrelaxed_model_1.cif')
+                os.system(f"cp -r {self.outdir}/protein/rank*   {self.model_dir}/")
+                os.system(f"cp -r {self.outdir}/protein/unrelaxed_model_1.cif   {self.model_dir}/unrelaxed_model_1.cif")
                 cmd =  f'cd {self.proj_dir}; tar -czvf {self.job_name}.{self.program}.tgz {self.program}/models;'
-                cmd += f'cd {self.work_dir}; ln -s models/model_00.cif ranked_0.cif'
+                cmd += f'cd {self.work_dir}; ln -s models/ranked_0.cif ranked_0.cif; ln -s models/unrelaxed_model_1.cif unrelaxed_model_1.cif'
                 os.system(cmd)
                 
-            self.alphafold2_code = run.returncode
-        else:
-            self.alphafold2_code = 1
+            status = run.returncode
+        return status
 
 class Main:
     def RF2NA(self, work_dir,protein_fasta, nucleic_type, nucleic_fasta):

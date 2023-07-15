@@ -37,6 +37,7 @@ def submit_new(request):
         params['job_name'] =  reg_W.sub( '_',params['proj_name'])
         params['proj_type'] = "Structure Prediction"
         params['work_dir'] = structure_prediction_dir
+        params['tools'] = ','.join( params['platform'])
         res = tasks.structure_prediction.apply_async(args = [params])
         myFunctions.create_submit_form(params, res)
         data['status'] = status
@@ -73,6 +74,33 @@ def getFile(request):
         else:
             print("file not found: " + filePath)
             raise Http404
+
+def struc_template_new(request):
+    
+    if request.method == "GET":
+        myuuid = request.GET.get("uuid")
+        program = request.GET.get('program')
+        run_log = os.path.join(structure_prediction_dir, myuuid ,program,
+                                'run_err.log')
+        logs = open(run_log).read()
+        groups = re_template.findall(logs)
+        data,tmp = [],[]
+        for g in groups:
+            if g in tmp: continue
+            pdbid, chain = g.split('_')
+            pdbentry = PDBentry.objects.filter(IDCODE=pdbid).first()
+            if pdbentry:
+                print(g)
+                item = {
+                    "CODEID": pdbentry.IDCODE,
+                    "Chain":  chain,
+                    "HEADER": pdbentry.HEADER,
+                    "COMPOUND": pdbentry.COMPOUND
+                }
+                tmp.append(g)
+                data.append(item)
+        # data = list(set(data))
+        return JsonResponse({"data": data})
 
 ##################################### old
 

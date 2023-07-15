@@ -32,6 +32,7 @@ class Fatcat:
         self.content = {
             "log": log
         }
+        return run.returncode
 
     def save_pickle(self,):
         item_pickle = self.outFi + '.pickle'
@@ -41,8 +42,9 @@ class Fatcat:
 def pair_align(path_1, path_2, tempDir, outFi_name):
     outFi = os.path.join(tempDir, outFi_name)
     fatcat = Fatcat(path_1, path_2, tempDir, outFi)
-    fatcat.align()
-    fatcat.save_pickle()
+    returncode = fatcat.align()
+    if returncode==0:
+        fatcat.save_pickle()
     return fatcat
 
 

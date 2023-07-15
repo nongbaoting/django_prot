@@ -2,7 +2,7 @@
 import prody
 from Bio.PDB import *
 from protein.toolkit import TMalign, SPalign, Fatcat
-import os
+import os,re
 import pickle
 from os import path
 from protein.toolkit import *
@@ -11,17 +11,25 @@ from django.http import JsonResponse, FileResponse, Http404
 struc_cpm_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_alignment/"
 database_dir = '/dat1/nbt2/proj/21-prot/dat/pdb/mmCIF/'
 struc_result_dir = "/training/nong/protein/res/"
-
+structure_prediction_dir = "/dat1/nbt2/proj/21-prot/web/data/res/structure_prediction/"
+reg_W = re.compile('\W+')
 
 def pair_TMalign(request):
     if request.method == "GET":
         myuuid = request.GET.get('uuid')
+
         dataType = request.GET.get("dataType")
         tmpdir = os.path.join(struc_cpm_dir, myuuid)
         os.system("mkdir -p %s" % tmpdir)
         print(tmpdir)
         input_pdb = os.path.join(
             struc_result_dir, 'alphafold',  myuuid, 'ranked_0.pdb')
+        ## for new structure prediction submit
+        if not os.path.exists(input_pdb):
+            input_pdb_source = os.path.join(structure_prediction_dir, myuuid, 'AlphaFold2', 'models', 'ranked_0.pdb')
+            input_pdb = os.path.join(struc_cpm_dir, 'ranked_0.pdb')
+            os.system(f'ln -s {input_pdb_source} {input_pdb}')
+            
         db_pdbid = request.GET.get('db_pdbid')
         db_pdbfile = os.path.join(
             database_dir, db_pdbid[1:3].lower(), db_pdbid.lower() + '.cif.gz')
@@ -59,11 +67,18 @@ def pair_SPalign(request):
     if request.method == "GET":
         myuuid = request.GET.get('uuid')
         dataType = request.GET.get("dataType")
+        myuuid = reg_W.sub('_', myuuid)
         tmpdir = os.path.join(struc_cpm_dir, myuuid)
         os.system("mkdir -p %s" % tmpdir)
         print(tmpdir)
         input_pdb = os.path.join(
             struc_result_dir, 'alphafold',  myuuid, 'ranked_0.pdb')
+        ## for new structure prediction submit
+        if not os.path.exists(input_pdb):
+            input_pdb_source = os.path.join(structure_prediction_dir, myuuid, 'AlphaFold2', 'models', 'ranked_0.pdb')
+            input_pdb = os.path.join(struc_cpm_dir, 'ranked_0.pdb')
+            os.system(f'ln -s {input_pdb_source} {input_pdb}')
+
         db_pdbid = request.GET.get('db_pdbid')
         db_pdbfile = os.path.join(
             database_dir, db_pdbid[1:3].lower(), db_pdbid.lower() + '.cif.gz')
@@ -107,6 +122,13 @@ def pair_Fatcat(request):
         print(tmpdir)
         input_pdb = os.path.join(
             struc_result_dir, 'alphafold',  myuuid, 'ranked_0.pdb')
+
+        ## for new structure prediction submit
+        if not os.path.exists(input_pdb):
+            input_pdb_source = os.path.join(structure_prediction_dir, myuuid, 'AlphaFold2', 'models', 'ranked_0.pdb')
+            input_pdb = os.path.join(struc_cpm_dir, 'ranked_0.pdb')
+            os.system(f'ln -s {input_pdb_source} {input_pdb}')
+
         db_pdbid = request.GET.get('db_pdbid')
         db_pdbfile = os.path.join(
             database_dir, db_pdbid[1:3].lower(), db_pdbid.lower() + '.cif.gz')

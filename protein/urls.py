@@ -34,7 +34,7 @@ urlpatterns = [
      path('predict/structure_submit_new/', struc_predict.submit_new),
      path("api/structure/getFile_new/",    struc_predict.getFile),
      path('api/structure/result_new/',  struc_predict.get_result),
-
+      path("api/structure/getTemplate_new/", struc_predict.struc_template_new),
 
     # search
     path('search/', struc_predict.search, name="search"),
