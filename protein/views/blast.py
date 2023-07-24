@@ -55,7 +55,7 @@ def psijackhmmer(request):
         data['status'] = status
         file_id = str(uuid.uuid4())
         params['proj_type'] = "blast"
-        parmas['tools'] =','.join(body['program']),
+        params['tools'] =','.join(params['program'])
         print(params)
         res = tasks.blast.apply_async(args = [params])
         myFunctions.create_submit_form(params, res)

@@ -42,6 +42,7 @@ class RoseTTAFold2NA:
     def run(self,protein_fasta, nucleic_type, nucleic_fasta):
         cmd =self.init_cmd + f' {self.outdir} {protein_fasta} {nucleic_type}:{nucleic_fasta}; cp -r {self.outdir}/models ."'
         subprocess.run(cmd, shell=True)
+        print(cmd)
         # shutil.copy(f'{self.outdir}/models', self.work_dir)
         
         self.format_result()
