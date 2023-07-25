@@ -44,7 +44,6 @@ class RoseTTAFold2NA:
         subprocess.run(cmd, shell=True)
         print(cmd)
         # shutil.copy(f'{self.outdir}/models', self.work_dir)
-        
         self.format_result()
         # self.clear()
 

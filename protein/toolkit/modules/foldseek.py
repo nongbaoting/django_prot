@@ -13,48 +13,67 @@ import pickle
 
 class Foldseek:
 
-    def __init__(self, pdbFi, foldseek_db,outFi):
+    def __init__(self, pdbFi):
         self.pdbFi = pdbFi 
-        self.foldseek_db = foldseek_db
-        self.outFi = outFi
-        self.dt = []
-    def run_cmd(self):
-        cmd = f'foldseek easy-search {self.pdbFi} {self.foldseek_db} {self.outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore"'
+        
+    def run_cmd(self,foldseek_db,outFi):
+        cmd = f'foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore"'
         run = subprocess.run(cmd, shell=True)
-        self.parse()
         return run.returncode
-    def parse(self,):
-        with open(self.outFi, 'r') as f:
+    
+    def parse(self, outFi):
+        dt = []
+        with open(outFi, 'r') as f:
             for li in f:
                 query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore = li.strip('\n').split('\t')
-                self.dt.append({
-                    "query":query,
-                    "target":target.split('.')[0],
-                })
+                if float(ttmscore) > 0.3:
+                    dt.append({
+                        "query":query,
+                        # "target":target.split('.')[0],
+                        "target":target.split('.')[0],
+                        "qstart": int(qstart),
+                        "qend": int(qend),
+                        "ttmscore":  round(float(ttmscore),2),
+                        "qtmscore":round(float(qtmscore),2),
+                        "prob": float(prob),
+                        "evalue":float(evalue),
+                    })
+        return dt
 
-    def format_ECOD(self,ecodFi,outJsonFi):
+
+    def format_ECOD(self,outFi, outJsonFi, ecodInfoFi):
+        data = self.parse(outFi)
         webDt = []
-        with open(ecodFi, 'rb') as fe:
+        with open(ecodInfoFi, 'rb') as fe:
             ecod = pickle.load(fe)
-            for item in self.dt:
+            for item in data:
                 uid = item['target']
                 uid2,ecod_domain_id,pdb,chain,pdb_range,t_name,f_name = ecod[uid]
                 item['pdb'] =pdb
                 item['chain'] =chain
+                item['ecod_domain_id'] = ecod_domain_id
                 item['pdb_range'] =pdb_range
-                item['t_name'] = t_name
-                item['f_name'] = f_name
+                item['t_name'] = t_name.strip('"')
+                item['f_name'] = f_name.strip('"')
                 webDt.append(item)
         with  open(outJsonFi, 'w') as fo:
             json.dump(json.dumps(webDt), fo)
 
 
 
+def run_annotate( pdbFi,outDir):
+    foldseek = Foldseek(pdbFi)
+    ecod_out = os.path.join(outDir, 'ecod.txt')
+    ecod_json = os.path.join(outDir, 'ecod.json')
+    ecod_foldseekDB = '/dat1/dat/db/ECOD/F70/foldseek/foldseek_ECOD_F70'
+    ecodInfoFi = "/dat1/dat/db/ECOD/F70/ecod.F70.pickle"
+    #foldseek.run_cmd(ecod_foldseekDB,ecod_out)
+    foldseek.format_ECOD(ecod_out, ecod_json,ecodInfoFi)
+
 class Main:
-    def run_ecod(self, pdbFi,foldseek_db,outFi):
-        foldseek_ecod = Foldseek(pdbFi,foldseek_db,outFi)
-        foldseek_ecod.run_cmd()
-        foldseek_ecod.format_ECOD('/dat1/dat/db/ECOD/F70/ecod.F70.pickle','ecod.json')
+    def run_ecod(self, pdbFi,outDir):
+        run_annotate( pdbFi,outDir)
+
     def pickle_ECOD(self,ecodFi="/dat1/dat/db/ECOD/F70/ecod.latest.F70.domains.txt",outFi="ecod.F70.pickle"):
         dt = defaultdict(list)
         with open(ecodFi, 'r') as f:

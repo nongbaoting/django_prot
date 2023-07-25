@@ -4,7 +4,7 @@ from os import path
 from collections import defaultdict
 from protein.models import *
 from .modules import unidoc,sword2,bindingSites,interproscan
-
+reg_cif = re.compile('cif$')
 def domain_annotations(params):
     '''
     params contains: work_dir,pdbfile,chain
@@ -12,6 +12,11 @@ def domain_annotations(params):
     work_dir = create_tmpDir(params['work_dir'], params['uuid'])
     pdbfile = params['pdbfile']
     chain = params['chain']
+
+    if reg_cif.search(pdbfile):
+        pdbfile_change = os.path.join(work_dir,'upload.pdb')
+        cif2pdb(pdbfile, pdbfile_change)
+        pdbfile = pdbfile_change
 
     # run unidoc,sword2
     unidoc_track = unidoc.run_unidoc(pdbfile, chain, work_dir)
@@ -47,3 +52,12 @@ def create_tmpDir(baseDir, myuuid):
     tmpdir = path.join(baseDir, myuuid)
     subprocess.run("mkdir -p " + tmpdir, shell=True)
     return tmpdir
+
+## cif2pdb
+import Bio.PDB
+def cif2pdb(cifFile,pdbFile):
+    parser = Bio.PDB.MMCIFParser()
+    structure = parser.get_structure("name", cifFile)
+    io = Bio.PDB.PDBIO()
+    io.set_structure(structure)
+    io.save(pdbFile)

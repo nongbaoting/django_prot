@@ -5,6 +5,8 @@ from protein.models import *
 from protein import tasks
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
+reg_cif = re.compile('cif$')
+
 from django.http import JsonResponse,FileResponse, Http404
 def uploadPDB_and_annotation(request):
     reg_af = re.compile('AF-')
@@ -28,6 +30,8 @@ def uploadPDB_and_annotation(request):
                 fileName = reg_W.sub('_', fileName)
                 # filePath = os.path.join(tempDir, fileName)
                 filePath = os.path.join(tempDir, 'upload.pdb')
+                if reg_cif.search(fileName):
+                    filePath = os.path.join(tempDir, 'upload.cif')
                 print('filepath = [%s]' % filePath)
                 try:
                     writeFile(filePath, file)
@@ -80,8 +84,20 @@ def parser_results(request):
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
             # jsonRes = json.loads(json.load(f))
-        print(jsonRes)
+        # print(jsonRes)
         return JsonResponse(jsonRes,safe=False)
+    elif request_type == "ECOD":
+        resFi = os.path.join(result_dir, myuuid, "ecod.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            data = get_one_page(jsonRes,request)
+            content = {
+                "data": data,
+                "totalCount": len(jsonRes)
+            }
+            return JsonResponse(content,safe=False)
+
     else:
         raise Exception("Unknown")
 
@@ -137,3 +153,21 @@ def writeFile(filePath, file):
         else:
             data = file.read()  # .decode('utf-8')
             f.write(data)
+
+def get_one_page(newQ, request, field="ttmscore",order="descending"):
+    pageSize = int(request.GET.get('pageSize'))
+    currentPage = int(request.GET.get('currentPage'))
+    
+    order = request.GET.get('order')
+    is_sort = request.GET.get('is_sort')
+    field = request.GET.get('field')
+    print("order field", order, field,is_sort)
+    if is_sort:
+        print("order field", order, field,is_sort)
+        if order == "descending":
+            newQ = sorted(newQ, key=lambda k: k[field], reverse=True)
+        else:
+            newQ = sorted(newQ, key=lambda k: k[field])
+
+    requestData = newQ[(currentPage - 1) * pageSize : currentPage * pageSize]
+    return  requestData
