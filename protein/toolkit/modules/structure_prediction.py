@@ -69,10 +69,13 @@ class AlphaFold2:
                 model_preset = 'multimer'
             
             log =self.work_dir + '/run_err.log'
+            cmd_sh = self.outdir + '/run.sh'
             # cmd = ". /training/nong/app/miniconda3/etc/profile.d/conda.sh; conda activate alphafold; "
-            cmd = self.init_cmd + f'conda run -n alphafold python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 0 --fasta_paths={faFile} --max_template_date=2023-3-9 \
+            cmd = self.init_cmd + f'conda run -n alphafold python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 2 --fasta_paths={faFile} --max_template_date=2023-3-9 \
                 --data_dir=/training/nong/protein/db/alphafold_dat/  --model_preset={model_preset} --output_dir={self.outdir} 2>{log}"'
             print(f"running alphafold 2,model_preset:{model_preset} =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
+            with open(cmd_sh, 'w') as fsh:
+                fsh.write(cmd + '\n')
             run = subprocess.run(cmd, shell=True)
            
             pdb2cif = PDB.Main()
@@ -89,12 +92,16 @@ class AlphaFold2:
                 os.system(cmd)
                 
             status = run.returncode
+            if status != 0:
+                sys.exit(status)
         return status
 
 class Main:
     def RF2NA(self, work_dir,protein_fasta, nucleic_type, nucleic_fasta):
         rf2na = RoseTTAFold2NA(work_dir)
         rf2na.run(protein_fasta, nucleic_type, nucleic_fasta)
-
+    def AlphaFold(self,faFile, work_dir, params):
+        alpha = AlphaFold2(work_dir, params)
+        alpha.run(faFile)
 if __name__ == '__main__':
     fire.Fire(Main)
