@@ -7,6 +7,9 @@ reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
 reg_cif = re.compile('cif$')
 
+from Bio import PDB
+import numpy as np
+
 from django.http import JsonResponse,FileResponse, Http404
 def uploadPDB_and_annotation(request):
     reg_af = re.compile('AF-')
@@ -56,7 +59,6 @@ def uploadPDB_and_annotation(request):
         res = tasks.pdb_domain_annotations.apply_async(args = [params])
         myFunctions.create_submit_form(params, res)
         return JsonResponse({'msg':200})
-
 
 def parser_results(request):
     result_dir = os.path.join(pdb_annotations_dir, 'results')
@@ -113,7 +115,91 @@ def get_pdbFile(request):
         print("File not exist!" + pdb_fi)
         raise Http404("File not exist!" + pdb_fi)
 
-import numpy as np
+
+
+def align(request):
+    myuuid = request.GET.get('uuid')
+    db_pdbid =request.GET.get('db_pdbid')
+    db_name = request.GET.get('db_name')
+    chain = request.GET.get('chain')
+    resFi = os.path.join(pdb_annotations_dir, 'results', myuuid, "ecod.json")
+    print(request)
+    db_dir = '/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'
+    suffix = '.pdbnum.pdb'
+    db_pdb = os.path.join(db_dir,db_pdbid + suffix)
+    upload_pdb = os.path.join(pdb_annotations_dir, 'results', myuuid, "upload.pdb")
+    with open(resFi) as f:
+        jsonRes = json.loads(json.load(f))
+        matrix = getMatrix(db_pdbid, jsonRes)
+        print(matrix)
+        newUploadPdb = rotate(matrix, upload_pdb)
+    rotate_pdb = "/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/results/e1960a66-ea52-48f0-905b-f4a4f6fc201f/test.pdb"
+    
+    parser = PDB.PDBParser()
+    struct1 = parser.get_structure('protein1', rotate_pdb)
+
+    # Read second PDB file
+    struct2 = parser.get_structure('protein2', db_pdb)
+    for model in struct2:
+        for chain in model:
+            chain.id = 'B' # Rename chain ID
+            struct1[0].add(chain) 
+    # Merge the two structures
+    # merged = struct1 + struct2
+
+    # Write out merged structure to StringIO buffer
+    # io = BytesIO()
+    # PDB.PDBIO().set_structure(struct1).save(io)
+    # io.seek(0)
+
+    # response = FileResponse(struct2, filename='merged.pdb', content_type='chemical/x-pdb')
+    # return response
+    fh = open(rotate_pdb, 'rb')
+    return FileResponse(fh)
+
+
+
+################################
+
+def getMatrix(target, alignRes):
+    matrix = []
+    for item in alignRes:
+        if item["target"] == target:
+            t = [float(i) for i in item['t'].split(',')]
+            u = [float(i) for i in item['u'].split(',')]
+            print(t)
+            matrix =  np.array([
+                [t[0], u[0], u[3],u[6]],
+                [t[1], u[1], u[4],u[7]],
+                [t[2], u[2], u[5],u[8]],
+                ])
+            return matrix
+
+def rotate(matrix, inPDB_1):
+        parser = PDB.PDBParser()
+        name = inPDB_1.split('.')[0]
+        struct = parser.get_structure(name, inPDB_1)
+        for model in struct:
+            for chain in model:
+                for residue in chain:
+                    for atom in residue:
+                        x, y, z = atom.coord
+                        X = matrix[0][0]     + matrix[0][1] * x + \
+                            matrix[0][2] * y + matrix[0][3] * z
+
+                        Y = matrix[1][0]     + matrix[1][1] * x + \
+                            matrix[1][2] * y + matrix[1][3] * z
+
+                        Z = matrix[2][0]     + matrix[2][1] * x + \
+                            matrix[2][2] * y + matrix[2][3] * z
+
+                        atom.coord = [X, Y, Z]
+        io = PDB.PDBIO()
+        io.set_structure(struct)
+        io.save('/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/results/e1960a66-ea52-48f0-905b-f4a4f6fc201f/test.pdb')
+        return struct
+
+
 def df_to_JSjson(df):
     columns = df.columns
     print(columns)
@@ -144,7 +230,6 @@ def tableFi_toJSjson(fi):
     return dt
 
 
-################################
 def writeFile(filePath, file):
     with open(filePath, "wb") as f:
         if file.multiple_chunks():

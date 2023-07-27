@@ -78,7 +78,7 @@ class RUN:
             web_dir = web_base + 'alphafold/' + pre
             log = res_dir + '/run_err.log'
             cmd = ". /training/nong/app/miniconda3/etc/profile.d/conda.sh; conda activate alphafold; "
-            cmd += f"python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 1 --fasta_paths={faFile} --max_template_date=2023-3-9 \
+            cmd += f"python3 /training/nong/protein/apps/alphafold/docker/run_docker.py --gpu_devices 2 --fasta_paths={faFile} --max_template_date=2023-3-9 \
                 --data_dir=/training/nong/protein/db/alphafold_dat/  --model_preset={model_preset} --output_dir={res_root} 2>{log}; "
             print(f"running alphafold 2,model_preset:{model_preset} =============================>>>>>>>>>>>>>>>>>>>>>>> ", timezone.now())
             run = subprocess.run(cmd, shell=True)

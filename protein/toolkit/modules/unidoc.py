@@ -84,8 +84,6 @@ def domain2track(domains):
     # print(domain_track)
     return domain_track
 
-
-
 class Unidoc:
 
     def __init__(self,pdbfile,chain,work_dir):

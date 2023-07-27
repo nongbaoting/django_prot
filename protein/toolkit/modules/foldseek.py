@@ -17,7 +17,7 @@ class Foldseek:
         self.pdbFi = pdbFi 
         
     def run_cmd(self,foldseek_db,outFi):
-        cmd = f'foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore"'
+        cmd = f'foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t"'
         run = subprocess.run(cmd, shell=True)
         return run.returncode
     
@@ -25,18 +25,21 @@ class Foldseek:
         dt = []
         with open(outFi, 'r') as f:
             for li in f:
-                query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore = li.strip('\n').split('\t')
+                query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t = li.strip('\n').split('\t')
                 if float(ttmscore) > 0.3:
                     dt.append({
                         "query":query,
                         # "target":target.split('.')[0],
                         "target":target.split('.')[0],
+                        "qlen": int(qlen),
                         "qstart": int(qstart),
                         "qend": int(qend),
                         "ttmscore":  round(float(ttmscore),2),
                         "qtmscore":round(float(qtmscore),2),
                         "prob": float(prob),
                         "evalue":float(evalue),
+                        "u":u,
+                        "t":t,
                     })
         return dt
 
@@ -67,7 +70,7 @@ def run_annotate( pdbFi,outDir):
     ecod_json = os.path.join(outDir, 'ecod.json')
     ecod_foldseekDB = '/dat1/dat/db/ECOD/F70/foldseek/foldseek_ECOD_F70'
     ecodInfoFi = "/dat1/dat/db/ECOD/F70/ecod.F70.pickle"
-    #foldseek.run_cmd(ecod_foldseekDB,ecod_out)
+    foldseek.run_cmd(ecod_foldseekDB,ecod_out)
     foldseek.format_ECOD(ecod_out, ecod_json,ecodInfoFi)
 
 class Main:

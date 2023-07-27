@@ -78,6 +78,7 @@ urlpatterns = [
     path("api/pdb_domain_annotations/uploadPDB_and_annotation/", pdb_domain_annotations.uploadPDB_and_annotation),
     path("api/pdb_domain_annotations/parser_results/", pdb_domain_annotations.parser_results),
     path("api/pdb_domain_annotations/get_pdbFile/", pdb_domain_annotations.get_pdbFile),
+    path("api/pdb_domain_annotations/align/", pdb_domain_annotations.align),
 
     # tadA_like
     path("api/results/tada_like/", tada_like.interpro),
