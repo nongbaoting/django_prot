@@ -6,6 +6,7 @@ from protein import tasks
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
 reg_cif = re.compile('cif$')
+import shutil
 
 from Bio import PDB
 import numpy as np
@@ -122,45 +123,111 @@ def align(request):
     db_pdbid =request.GET.get('db_pdbid')
     db_name = request.GET.get('db_name')
     chain = request.GET.get('chain')
-    resFi = os.path.join(pdb_annotations_dir, 'results', myuuid, "ecod.json")
+    work_dir = os.path.join(pdb_annotations_dir, 'results', myuuid)
+    resFi = os.path.join(work_dir, "ecod.json")
     print(request)
     db_dir = '/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'
     suffix = '.pdbnum.pdb'
     db_pdb = os.path.join(db_dir,db_pdbid + suffix)
-    upload_pdb = os.path.join(pdb_annotations_dir, 'results', myuuid, "upload.pdb")
+    upload_pdb = os.path.join(work_dir, "upload.pdb")
     with open(resFi) as f:
         jsonRes = json.loads(json.load(f))
         matrix = getMatrix(db_pdbid, jsonRes)
-        print(matrix)
+        print(matrix[0][0])
+        print(matrix[0,0])
         newUploadPdb = rotate(matrix, upload_pdb)
-    rotate_pdb = "/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/results/e1960a66-ea52-48f0-905b-f4a4f6fc201f/test.pdb"
-    
-    parser = PDB.PDBParser()
-    struct1 = parser.get_structure('protein1', rotate_pdb)
 
-    # Read second PDB file
-    struct2 = parser.get_structure('protein2', db_pdb)
-    for model in struct2:
-        for chain in model:
-            chain.id = 'B' # Rename chain ID
-            struct1[0].add(chain) 
-    # Merge the two structures
-    # merged = struct1 + struct2
+    #     io = PDB.PDBIO()
+    #     io.set_structure(newUploadPdb)
+    #     io.save(rotate_pdb)
 
-    # Write out merged structure to StringIO buffer
-    # io = BytesIO()
-    # PDB.PDBIO().set_structure(struct1).save(io)
-    # io.seek(0)
-
-    # response = FileResponse(struct2, filename='merged.pdb', content_type='chemical/x-pdb')
-    # return response
-    fh = open(rotate_pdb, 'rb')
+    tmalign = TMalign(work_dir, upload_pdb, db_pdb)
+    tmalign.run()
+    fh = open(tmalign.merged_pdb, 'rb')
     return FileResponse(fh)
 
 
 
 ################################
+class TMalign:
+    def __init__(self, work_dir, pdb1, pdb2):
+        self.matrixFi = os.path.join(work_dir, 'matrix')
+        self.work_dir = work_dir
+        self.pdb1 = pdb1 
+        self.pdb2 = pdb2
+       
+        self.merged_pdb = os.path.join(work_dir, 'merged_pdb.pdb')
+        self.matrix = []
+    def clean(self):
+        tmpFiles = [self.matrixFi,self.merged_pdb]
+        for tFi in tmpFiles:
+            if os.path.exists(tFi):
+                os.remove(tFi)
+                
+    def getMatrix(self):
+        re_ma = re.compile(r"m\s+t\[m\]\s+u\[m\]\[0\]")
+        re_sp = re.compile(r"\s+")
+        matrix = []
+        with open(self.matrixFi, 'r') as f:
+            m = 0
+            for li in f:
+                if m == 1:
+                    cell = re_sp.split(li.strip())
+                    self.matrix.append([float(i) for i in cell[1:]])
+                if re_ma.match(li):
+                    m += 1
+                if len(self.matrix) >= 3:
+                    print(self.matrix)
+                    break
 
+    def rotate(self):
+        parser = PDB.PDBParser()
+        self.struct1 = parser.get_structure('uploadPDB', self.pdb1)
+        for model in self.struct1:
+            for chain in model:
+                for residue in chain:
+                    for atom in residue:
+                        x, y, z = atom.coord
+                        X = self.matrix[0][0] + self.matrix[0][1] * x + \
+                            self.matrix[0][2] * y + self.matrix[0][3] * z
+
+                        Y = self.matrix[1][0] + self.matrix[1][1] * x + \
+                            self.matrix[1][2] * y + self.matrix[1][3] * z
+
+                        Z = self.matrix[2][0] + self.matrix[2][1] * x + \
+                            self.matrix[2][2] * y + self.matrix[2][3] * z
+
+                        atom.coord = [X, Y, Z]
+
+        # return struct
+        # io = PDB.PDBIO()
+        # io.set_structure(struct)
+        # io.save(self.roate_pdb)
+
+    def merge2pdb(self,):
+        parser = PDB.PDBParser()
+        # struct1 = parser.get_structure('protein1', pdb1)
+        # Read second PDB file
+        struct2 = parser.get_structure('protein2', self.pdb2)
+        for model in struct2:
+            for chain in model:
+                chain.id = 'B' # Rename chain ID
+                self.struct1[0].add(chain)
+        io = PDB.PDBIO()
+        io.set_structure(self.struct1)
+        io.save(self.merged_pdb)
+
+    def run_cmd(self):
+        cmd = f'cd {self.work_dir}; TMalign {self.pdb1} {self.pdb2} -m {self.matrixFi}'
+        print(cmd)
+        os.system(cmd)
+
+    def run(self,):
+        self.run_cmd()
+        self.getMatrix()
+        self.rotate()
+        self.merge2pdb()
+# TODO delete obselete
 def getMatrix(target, alignRes):
     matrix = []
     for item in alignRes:
@@ -174,7 +241,7 @@ def getMatrix(target, alignRes):
                 [t[2], u[2], u[5],u[8]],
                 ])
             return matrix
-
+# TODO delete obselete
 def rotate(matrix, inPDB_1):
         parser = PDB.PDBParser()
         name = inPDB_1.split('.')[0]
