@@ -17,8 +17,10 @@ class Foldseek:
         self.pdbFi = pdbFi 
         
     def run_cmd(self,foldseek_db,outFi):
-        cmd = f'foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t"'
+        cmd = f'/dat1/nbt2/miniconda3/bin/foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t"'
+        print(cmd)
         run = subprocess.run(cmd, shell=True)
+       
         return run.returncode
     
     def parse(self, outFi):
@@ -30,7 +32,7 @@ class Foldseek:
                     dt.append({
                         "query":query,
                         # "target":target.split('.')[0],
-                        "target":target.split('.')[0],
+                        "target":target,
                         "qlen": int(qlen),
                         "qstart": int(qstart),
                         "qend": int(qend),
@@ -50,28 +52,77 @@ class Foldseek:
         with open(ecodInfoFi, 'rb') as fe:
             ecod = pickle.load(fe)
             for item in data:
-                uid = item['target']
+                uid = item['target'].split('.')[0]
                 uid2,ecod_domain_id,pdb,chain,pdb_range,t_name,f_name = ecod[uid]
                 item['pdb'] =pdb
                 item['chain'] =chain
                 item['ecod_domain_id'] = ecod_domain_id
-                item['pdb_range'] =pdb_range
+                # item['pdb_range'] =pdb_range
                 item['t_name'] = t_name.strip('"')
                 item['f_name'] = f_name.strip('"')
                 webDt.append(item)
         with  open(outJsonFi, 'w') as fo:
             json.dump(json.dumps(webDt), fo)
 
+    def format_SCOP(self,outFi, outJsonFi, InfoFi):
+        data = self.parse(outFi)
+        dt = defaultdict(list)
+        with open(InfoFi) as f:
+            next(f)
+            for li in f:
+                cell = li.strip().split("\t")
+                dt[cell[0]] = cell # cell[0]: uid, domain_id
+        
+
+        webDt = []
+
+        for item in data:
+            uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
+            uid = item['target'].split('.')[0]
+            cell = dt[uid]
+            item['pdbid'] =pdbid
+            item['chain'] =chain
+            item['ecod_domain_id'] = uid
+            # item['pdb_range'] =pdb_range
+            item['t_name'] = cell[-2]
+            item['f_name'] = cell[-1]
+            webDt.append(item)
+         
+        with open(outJsonFi, 'w') as fo:
+            json.dump(json.dumps(webDt), fo)
 
 
 def run_annotate( pdbFi,outDir):
     foldseek = Foldseek(pdbFi)
+
     ecod_out = os.path.join(outDir, 'ecod.txt')
     ecod_json = os.path.join(outDir, 'ecod.json')
-    ecod_foldseekDB = '/dat1/dat/db/ECOD/F70/foldseek/foldseek_ECOD_F70'
+    ecod_foldseekDB = '/dat1/dat/db/foldseek/ecod/F70/foldseek/foldseek_ECOD_F70'
     ecodInfoFi = "/dat1/dat/db/ECOD/F70/ecod.F70.pickle"
     foldseek.run_cmd(ecod_foldseekDB,ecod_out)
     foldseek.format_ECOD(ecod_out, ecod_json,ecodInfoFi)
+
+    scop_out = os.path.join(outDir, 'scop.txt')
+    scop_json = os.path.join(outDir, 'scop.json')
+    scop_foldseekDB = '/dat1/dat/db/foldseek/scop2/foldseek/foldseek_scopDomain'
+    scopInfoFi = "/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt"
+    foldseek.run_cmd(scop_foldseekDB,scop_out)
+    foldseek.format_SCOP(scop_out, scop_json, scopInfoFi)
+    print("scope")
+
+    # cath_out = os.path.join(outDir, 'cath.txt')
+    # cath_json = os.path.join(outDir, 'cath.json')
+    # cath_foldseekDB = '/dat1/dat/db/cath/F70/foldseek/foldseek_cath_F70'
+    # cathInfoFi = "/dat1/dat/db/cath/F70/cath.F70.pickle"
+    # foldseek.run_cmd(cath_foldseekDB,cath_out)
+    # foldseek.format_cath(cath_out, cath_json,cathInfoFi)
+
+    # pdbAF_out = os.path.join(outDir, 'pdbAF.txt')
+    # pdbAF_json = os.path.join(outDir, 'pdbAF.json')
+    # pdbAF_foldseekDB = '/dat1/dat/db/pdbAF/F70/foldseek/foldseek_pdbAF_F70'
+    # pdbAFInfoFi = "/dat1/dat/db/pdbAF/F70/pdbAF.F70.pickle"
+    # foldseek.run_cmd(pdbAF_foldseekDB,pdbAF_out)
+    # foldseek.format_pdbAF(pdbAF_out, pdbAF_json, pdbAFInfoFi)
 
 class Main:
     def run_ecod(self, pdbFi,outDir):
@@ -91,7 +142,18 @@ class Main:
         pickle.dump(dt, fo)
         fo.close()
 
-
+    
+    def pickle_scope(Fi="/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt", outFi="scope-cla.pickle"):
+        dt = defaultdict(list)
+        with open(Fi) as f:
+            next(f)
+            for li in f:
+                cell = li.strip().split("\t")
+                dt[cell[0]] = cell
+        return dt
+        fo =  open(outFi, 'wb')
+        pickle.dump(dt, fo)
+        fo.close()
                 
 
 

@@ -3,7 +3,7 @@ import subprocess
 from os import path
 from collections import defaultdict
 from protein.models import *
-from .modules import unidoc,sword2,bindingSites,interproscan
+from .modules import unidoc,sword2,bindingSites,interproscan, foldseek
 reg_cif = re.compile('cif$')
 def domain_annotations(params):
     '''
@@ -27,6 +27,9 @@ def domain_annotations(params):
 
     # run interproscan
     interproscan.run_interproscan(work_dir)
+    
+    ## annotation
+    foldseek.run_annotate(pdbfile,work_dir)
     
     protvistaTrackFi = os.path.join(work_dir,"protvistData.json")
     tracks = []

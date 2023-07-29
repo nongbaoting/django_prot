@@ -100,7 +100,17 @@ def parser_results(request):
                 "totalCount": len(jsonRes)
             }
             return JsonResponse(content,safe=False)
-
+    elif request_type == "SCOP":
+        resFi = os.path.join(result_dir, myuuid, "scop.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            data = get_one_page(jsonRes,request)
+            content = {
+                "data": data,
+                "totalCount": len(jsonRes)
+            }
+            return JsonResponse(content,safe=False)
     else:
         raise Exception("Unknown")
 
@@ -118,28 +128,24 @@ def get_pdbFile(request):
 
 
 
+
 def align(request):
+    annotateDBinfo = {
+        "ECOD": ['/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'],
+        "SCOP": ['/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain'],
+        "CATH":[]
+    }   
     myuuid = request.GET.get('uuid')
-    db_pdbid =request.GET.get('db_pdbid')
+    db_pdbName =request.GET.get('db_pdbid').split('_MODEL')[0]
     db_name = request.GET.get('db_name')
     chain = request.GET.get('chain')
     work_dir = os.path.join(pdb_annotations_dir, 'results', myuuid)
     resFi = os.path.join(work_dir, "ecod.json")
     print(request)
-    db_dir = '/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'
+    db_dir = annotateDBinfo[db_name][0]
     suffix = '.pdbnum.pdb'
-    db_pdb = os.path.join(db_dir,db_pdbid + suffix)
+    db_pdb = os.path.join(db_dir,db_pdbName)
     upload_pdb = os.path.join(work_dir, "upload.pdb")
-    with open(resFi) as f:
-        jsonRes = json.loads(json.load(f))
-        matrix = getMatrix(db_pdbid, jsonRes)
-        print(matrix[0][0])
-        print(matrix[0,0])
-        newUploadPdb = rotate(matrix, upload_pdb)
-
-    #     io = PDB.PDBIO()
-    #     io.set_structure(newUploadPdb)
-    #     io.save(rotate_pdb)
 
     tmalign = TMalign(work_dir, upload_pdb, db_pdb)
     tmalign.run()
@@ -199,10 +205,6 @@ class TMalign:
 
                         atom.coord = [X, Y, Z]
 
-        # return struct
-        # io = PDB.PDBIO()
-        # io.set_structure(struct)
-        # io.save(self.roate_pdb)
 
     def merge2pdb(self,):
         parser = PDB.PDBParser()
@@ -227,6 +229,7 @@ class TMalign:
         self.getMatrix()
         self.rotate()
         self.merge2pdb()
+
 # TODO delete obselete
 def getMatrix(target, alignRes):
     matrix = []
