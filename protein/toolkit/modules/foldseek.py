@@ -72,10 +72,7 @@ class Foldseek:
             for li in f:
                 cell = li.strip().split("\t")
                 dt[cell[0]] = cell # cell[0]: uid, domain_id
-        
-
         webDt = []
-
         for item in data:
             uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
             uid = item['target'].split('.')[0]
@@ -91,7 +88,53 @@ class Foldseek:
         with open(outJsonFi, 'w') as fo:
             json.dump(json.dumps(webDt), fo)
 
-
+    def format_pdbDB(self,outFi, outJsonFi, InfoFi):
+        data = self.parse(outFi)
+        dt = defaultdict(list)
+        # with open(InfoFi) as f:
+        #     next(f)
+        #     for li in f:
+        #         cell = li.strip().split("\t")
+        #         dt[cell[0]] = cell # cell[0]: uid, domain_id
+        webDt = []
+        for item in data:
+            # uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
+            uid = item['target'].split('.')[0]
+            # cell = dt[uid]
+            # item['pdbid'] =pdbid
+            # item['chain'] =chain
+            # item['ecod_domain_id'] = uid
+            # # item['pdb_range'] =pdb_range
+            # item['t_name'] = cell[-2]
+            # item['f_name'] = cell[-1]
+            webDt.append(item)
+         
+        with open(outJsonFi, 'w') as fo:
+            json.dump(json.dumps(webDt), fo)
+    def format_AFDB(self,outFi, outJsonFi, InfoFi):
+        data = self.parse(outFi)
+        dt = defaultdict(list)
+        # with open(InfoFi) as f:
+        #     next(f)
+        #     for li in f:
+        #         cell = li.strip().split("\t")
+        #         dt[cell[0]] = cell # cell[0]: uid, domain_id
+        webDt = []
+        for item in data:
+            # uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
+            uid = item['target'].split('.')[0]
+            # cell = dt[uid]
+            # item['pdbid'] =pdbid
+            # item['chain'] =chain
+            # item['ecod_domain_id'] = uid
+            # # item['pdb_range'] =pdb_range
+            # item['t_name'] = cell[-2]
+            # item['f_name'] = cell[-1]
+            webDt.append(item)
+         
+        with open(outJsonFi, 'w') as fo:
+            json.dump(json.dumps(webDt), fo)
+            
 def run_annotate( pdbFi,outDir):
     foldseek = Foldseek(pdbFi)
 
@@ -117,16 +160,23 @@ def run_annotate( pdbFi,outDir):
     # foldseek.run_cmd(cath_foldseekDB,cath_out)
     # foldseek.format_cath(cath_out, cath_json,cathInfoFi)
 
-    # pdbAF_out = os.path.join(outDir, 'pdbAF.txt')
-    # pdbAF_json = os.path.join(outDir, 'pdbAF.json')
-    # pdbAF_foldseekDB = '/dat1/dat/db/pdbAF/F70/foldseek/foldseek_pdbAF_F70'
-    # pdbAFInfoFi = "/dat1/dat/db/pdbAF/F70/pdbAF.F70.pickle"
-    # foldseek.run_cmd(pdbAF_foldseekDB,pdbAF_out)
-    # foldseek.format_pdbAF(pdbAF_out, pdbAF_json, pdbAFInfoFi)
+    pdbDB_out = os.path.join(outDir, 'pdbDB.txt')
+    pdbDB_json = os.path.join(outDir, 'pdbDB.json')
+    pdbDB_foldseekDB = '/dat1/dat/db/foldseek/pdbDB/foldseek_PDB'
+    pdbDBInfoFi = ""
+    foldseek.run_cmd(pdbDB_foldseekDB,pdbDB_out)
+    foldseek.format_pdbDB(pdbDB_out, pdbDB_json,pdbDBInfoFi)
+
+    AFDB_out = os.path.join(outDir, 'AFDB.txt')
+    AFDB_json = os.path.join(outDir, 'AFDB.json')
+    AFDB_foldseekDB = '/dat1/dat/db/foldseek/AFDB/foldseek_PDB_AFDB'
+    AFDBInfoFi = ""
+    foldseek.run_cmd(AFDB_foldseekDB,AFDB_out)
+    foldseek.format_AFDB(AFDB_out, AFDB_json,AFDBInfoFi)
 
 class Main:
     def run_ecod(self, pdbFi,outDir):
-        run_annotate( pdbFi,outDir)
+        run_annotate( pdbFi, outDir)
 
     def pickle_ECOD(self,ecodFi="/dat1/dat/db/ECOD/F70/ecod.latest.F70.domains.txt",outFi="ecod.F70.pickle"):
         dt = defaultdict(list)

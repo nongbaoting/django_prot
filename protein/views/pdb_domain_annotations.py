@@ -65,30 +65,29 @@ def parser_results(request):
     result_dir = os.path.join(pdb_annotations_dir, 'results')
     myuuid = request.GET.get('uuid')
     request_type  = request.GET.get('request_type')
+    resFi= ''
     if request_type == "interpro":
         resFi = os.path.join(result_dir, myuuid, "interpro.track.json")
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-        return JsonResponse(jsonRes['upload:A'],safe=False)
+            return JsonResponse(jsonRes['upload:A'],safe=False)
     elif request_type == "unidoc":
         resFi = os.path.join(result_dir, myuuid, "unidoc.track.json")
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-        return JsonResponse(jsonRes['upload'],safe=False)
+            return JsonResponse(jsonRes['upload'],safe=False)
     elif request_type == "sword2":
         resFi = os.path.join(result_dir, myuuid, "sword2.track.json")
         print(request_type, resFi)
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-        return JsonResponse(jsonRes['upload'],safe=False)
+            return JsonResponse(jsonRes['upload'],safe=False)
     elif request_type == "protvista":
         resFi = os.path.join(result_dir, myuuid, "protvistData.json")
         print(request_type, resFi)
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-            # jsonRes = json.loads(json.load(f))
-        # print(jsonRes)
-        return JsonResponse(jsonRes,safe=False)
+            return JsonResponse(jsonRes,safe=False)
     elif request_type == "ECOD":
         resFi = os.path.join(result_dir, myuuid, "ecod.json")
         print(request_type, resFi)
@@ -111,9 +110,44 @@ def parser_results(request):
                 "totalCount": len(jsonRes)
             }
             return JsonResponse(content,safe=False)
+    elif request_type == "CATH":
+        resFi = os.path.join(result_dir, myuuid, "cath.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            data = get_one_page(jsonRes,request)
+            content = {
+                "data": data,
+                "totalCount": len(jsonRes)
+            }
+            return JsonResponse(content,safe=False)
+    elif request_type == "AFDB":
+        resFi = os.path.join(result_dir, myuuid, "AFDB.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            data = get_one_page(jsonRes,request)
+            content = {
+                "data": data,
+                "totalCount": len(jsonRes)
+            }
+            return JsonResponse(content,safe=False)
+    elif request_type == "pdbDB":
+        resFi = os.path.join(result_dir, myuuid, "pdbDB.json")
+        print(request_type, resFi)
+        with open(resFi) as f:
+            jsonRes = json.loads(json.load(f))
+            data = get_one_page(jsonRes,request)
+            content = {
+                "data": data,
+                "totalCount": len(jsonRes)
+            }
+            return JsonResponse(content,safe=False)
+
     else:
         raise Exception("Unknown")
 
+    
 def get_pdbFile(request):
     result_dir = os.path.join(pdb_annotations_dir, 'results')
     myuuid = request.GET.get('uuid')
@@ -133,6 +167,8 @@ def align(request):
     annotateDBinfo = {
         "ECOD": ['/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'],
         "SCOP": ['/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain'],
+        "pdbDB": ["/dat1/nbt2/proj/21-prot/dat/pdb/pdb_ln"],
+        "AFDB": ["/dat1/nbt2/proj/21-prot/dat/alphafold/v2/all/AFDB_all"],
         "CATH":[]
     }   
     myuuid = request.GET.get('uuid')
@@ -143,7 +179,6 @@ def align(request):
     resFi = os.path.join(work_dir, "ecod.json")
     print(request)
     db_dir = annotateDBinfo[db_name][0]
-    suffix = '.pdbnum.pdb'
     db_pdb = os.path.join(db_dir,db_pdbName)
     upload_pdb = os.path.join(work_dir, "upload.pdb")
 
