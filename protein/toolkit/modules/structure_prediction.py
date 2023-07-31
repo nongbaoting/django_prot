@@ -25,10 +25,9 @@ class RoseTTAFold2NA:
     
     def clear(self,):
         cmd = f'ssh -p3389 nong@172.22.148.150 "rm -rf {self.outdir}"'
+        
+       
         subprocess.run(cmd, shell=True)
-        cmd_sh = os.path.join(self.outdir,'run.sh')
-        with open(cmd_sh, 'w') as fsh:
-                fsh.write(cmd + '\n')
     def format_result(self):
         
         pdb2cif = PDB.Main()
@@ -39,10 +38,14 @@ class RoseTTAFold2NA:
         
         cmd =  f'cd {self.proj_dir}; tar -czvf {self.job_name}.{self.program}.tgz {self.program}/models;'
         cmd += f'cd {self.work_dir}; ln -s models/model_00.cif ranked_0.cif'
+    
         subprocess.run(cmd, shell=True)
 
     def run(self,protein_fasta, nucleic_type, nucleic_fasta):
         cmd =self.init_cmd + f' {self.outdir} {protein_fasta} {nucleic_type}:{nucleic_fasta}; cp -r {self.outdir}/models ."'
+        cmd_sh = os.path.join(self.outdir,'run.sh')
+        with open(cmd_sh, 'w') as fsh:
+            fsh.write(cmd + '\n')
         subprocess.run(cmd, shell=True)
         print(cmd)
         # shutil.copy(f'{self.outdir}/models', self.work_dir)

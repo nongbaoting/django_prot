@@ -1,4 +1,4 @@
-# 
+#  发布更改
 /dat1/nbt2/server/PROTsim/django_prot/django_prot/celeryconfig.py
 broker_url ='redis://localhost:6379/1'
 

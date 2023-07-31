@@ -109,13 +109,13 @@ def architecture(request):
             protin_id = items['rep_protein_id']
             cdd_locs = []
             protin = NrInfo.objects.filter(protin_id=protin_id).first()
-            # TODO 旧的用all,新的用NCBI
+          
             regions = protCD.objects.filter(protin_id=protin_id)
             for qr in regions:
                 qcd = CDD.objects.get(cdd_id=qr.cdd_id_id)
                 cdd_locs.append([qr.start, qr.end, qcd.cdd_name, qcd.cdd_desc])
             items["cdd_locs"] = cdd_locs
-            # items["target_len"] = protin.length
+            
             content.append(items)
 
         content_color = myFunctions.addCDcorlor(content)
@@ -194,7 +194,7 @@ def res_blast_jackhmmer(request):
             del blastDict[headKey]
         print("keys number: ", len(blastDict.keys()))
 
-        # TODO filter
+       
         if program == 'jackhmmer':
             dt = filter_jackhmmer(body, dt)
         elif program in ['psiblast', "BLASTP"]:
@@ -227,7 +227,7 @@ def res_blast_jackhmmer(request):
             protin_id = items['target']
             cdd_locs = []
             protin = NrInfo.objects.filter(protin_id=protin_id).first()
-            # TODO 旧的用all,新的用NCBI
+           
             regions = protCD.objects.filter(protin_id=protin_id)
             for qr in regions:
                 qcd = CDD.objects.get(cdd_id=qr.cdd_id_id)

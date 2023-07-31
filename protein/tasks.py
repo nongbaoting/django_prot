@@ -32,7 +32,7 @@ def structure_comparison(self, params):
     myuuid = self.request.id
     params['uuid'] = myuuid
     self.update_state(state='PROGRESS')
-    # TODO add funciton here
+   
     tmalgin = TMalign.TMalgin(params)
     result = tmalgin.run()
     print(result)
@@ -46,7 +46,7 @@ def pdb_domain_annotations(self, params):
     myuuid = self.request.id
     params['uuid'] = myuuid
     self.update_state(state='PROGRESS')
-    # TODO add funciton here
+   
     print(params)
     results = run_pdb_domain_annotations.domain_annotations(params)
     return results
@@ -58,7 +58,7 @@ def blast(self, params):
     myuuid = self.request.id
     params['uuid'] = myuuid
     self.update_state(state='PROGRESS')
-    # TODO add funciton here
+    
     print(params)
     results = run_blast.run_blast(params)
     return results
@@ -68,7 +68,7 @@ def structure_prediction(self, params):
     myuuid = self.request.id
     params['uuid'] = myuuid
     self.update_state(state='PROGRESS')
-    # TODO add funciton here
+   
     print(params)
     results = run_structure_prediction.predict(params)
     return results

@@ -60,7 +60,7 @@ def getFile(request):
         myuuid = request.GET.get('uuid')
         filename = request.GET.get('filename')
         job_name = request.GET.get("job_name")
-        # TODO新版 job_name 改为uuid
+       
         filePath = ''
         if filetype == "file":
             filePath = os.path.join(structure_prediction_dir, myuuid, program, filename)
@@ -119,7 +119,7 @@ def struc_getFile(request):
         program = request.GET.get('program')
         job_name = request.GET.get('job_name')
         filename = request.GET.get('filename')
-        # TODO新版 job_name 改为uuid
+       
         if filetype == "file":
             filePath = os.path.join(
                 struc_result_dir, program,  job_name, filename)
@@ -200,14 +200,7 @@ def structure_submit(request):
         data = {'uploadOk': True}
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        # TODO: find better way to handle json parsing
-        # with open('tmp_alpha.json', 'w') as fo:
-        #     fo.write(body_unicode)
-        # f = open('tmp_alpha.json')
-        # body =json.loads(f.read() )
-        # print(body['protein_seq'])
-        # print(b2['protein_seq'])
-      
+        
         proj_name = body["proj_name"]
         job_name = reg_W.sub('_', proj_name)
         params = {'alphafold': '',

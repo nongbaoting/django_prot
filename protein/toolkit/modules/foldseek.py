@@ -10,6 +10,7 @@
 import os, sys, fire, re, gzip,subprocess,json
 from collections import defaultdict
 import pickle
+import pandas as pd
 
 class Foldseek:
 
@@ -38,8 +39,8 @@ class Foldseek:
                         "qend": int(qend),
                         "ttmscore":  round(float(ttmscore),2),
                         "qtmscore":round(float(qtmscore),2),
-                        "prob": float(prob),
-                        "evalue":float(evalue),
+                        "prob": round(float(prob),2),
+                        "evalue":round(float(evalue),2),
                         "u":u,
                         "t":t,
                     })
@@ -91,22 +92,20 @@ class Foldseek:
     def format_pdbDB(self,outFi, outJsonFi, InfoFi):
         data = self.parse(outFi)
         dt = defaultdict(list)
-        # with open(InfoFi) as f:
-        #     next(f)
-        #     for li in f:
-        #         cell = li.strip().split("\t")
-        #         dt[cell[0]] = cell # cell[0]: uid, domain_id
+        with open(InfoFi, 'r') as f:
+            next(f); next(f)
+            for li in f:
+                cell = li.strip('\n').split('\t')
+                dt[cell[0].lower() ] = cell
+            
         webDt = []
-        for item in data:
+        for  item in data:
             # uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
             uid = item['target'].split('.')[0]
-            # cell = dt[uid]
-            # item['pdbid'] =pdbid
-            # item['chain'] =chain
-            # item['ecod_domain_id'] = uid
-            # # item['pdb_range'] =pdb_range
-            # item['t_name'] = cell[-2]
-            # item['f_name'] = cell[-1]
+            cell = dt[uid]
+            # print(uid, cell)
+            item['pdbid'] =uid.upper()
+            item['desc'] = cell[3]
             webDt.append(item)
          
         with open(outJsonFi, 'w') as fo:
@@ -114,22 +113,21 @@ class Foldseek:
     def format_AFDB(self,outFi, outJsonFi, InfoFi):
         data = self.parse(outFi)
         dt = defaultdict(list)
-        # with open(InfoFi) as f:
-        #     next(f)
-        #     for li in f:
-        #         cell = li.strip().split("\t")
-        #         dt[cell[0]] = cell # cell[0]: uid, domain_id
+        with open(InfoFi) as f:
+            next(f)
+            for li in f:
+                cell = li.strip().split("\t")
+                dt[cell[0]] = cell # cell[0]: uid, domain_id
         webDt = []
         for item in data:
-            # uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
-            uid = item['target'].split('.')[0]
-            # cell = dt[uid]
-            # item['pdbid'] =pdbid
-            # item['chain'] =chain
-            # item['ecod_domain_id'] = uid
-            # # item['pdb_range'] =pdb_range
-            # item['t_name'] = cell[-2]
-            # item['f_name'] = cell[-1]
+            uid = item['target'].split('-')[1]
+            if uid in dt:
+                cell = dt[uid]
+                accessions, entry_name, data_class, protein_name, gene_name, organism, taxonomy_id, sequence_length,*_ =cell
+                item['pdbid'] =uid
+                item['desc'] = protein_name
+                item['entry_name'] = entry_name
+                item['organism'] = organism
             webDt.append(item)
          
         with open(outJsonFi, 'w') as fo:
@@ -151,8 +149,8 @@ def run_annotate( pdbFi,outDir):
     scopInfoFi = "/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt"
     foldseek.run_cmd(scop_foldseekDB,scop_out)
     foldseek.format_SCOP(scop_out, scop_json, scopInfoFi)
-    print("scope")
-
+    
+    #TODO add CATH
     # cath_out = os.path.join(outDir, 'cath.txt')
     # cath_json = os.path.join(outDir, 'cath.json')
     # cath_foldseekDB = '/dat1/dat/db/cath/F70/foldseek/foldseek_cath_F70'
@@ -163,14 +161,14 @@ def run_annotate( pdbFi,outDir):
     pdbDB_out = os.path.join(outDir, 'pdbDB.txt')
     pdbDB_json = os.path.join(outDir, 'pdbDB.json')
     pdbDB_foldseekDB = '/dat1/dat/db/foldseek/pdbDB/foldseek_PDB'
-    pdbDBInfoFi = ""
+    pdbDBInfoFi = "/dat1/nbt2/proj/21-prot/dat/pdb/derived_data/index/entries.idx"
     foldseek.run_cmd(pdbDB_foldseekDB,pdbDB_out)
     foldseek.format_pdbDB(pdbDB_out, pdbDB_json,pdbDBInfoFi)
 
     AFDB_out = os.path.join(outDir, 'AFDB.txt')
     AFDB_json = os.path.join(outDir, 'AFDB.json')
     AFDB_foldseekDB = '/dat1/dat/db/foldseek/AFDB/foldseek_PDB_AFDB'
-    AFDBInfoFi = ""
+    AFDBInfoFi = "/dat1/dat/db/uniprot/subset/afdb.info"
     foldseek.run_cmd(AFDB_foldseekDB,AFDB_out)
     foldseek.format_AFDB(AFDB_out, AFDB_json,AFDBInfoFi)
 

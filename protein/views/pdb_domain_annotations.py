@@ -2,6 +2,7 @@ pdb_annotations_dir = "/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/"
 import uuid,time,re,os,json
 from protein.toolkit import *
 from protein.models import *
+import prody
 from protein import tasks
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
@@ -33,6 +34,7 @@ def uploadPDB_and_annotation(request):
 
                 fileName = reg_W.sub('_', fileName)
                 # filePath = os.path.join(tempDir, fileName)
+                # TODO 处理用户上传 chain 选择
                 filePath = os.path.join(tempDir, 'upload.pdb')
                 if reg_cif.search(fileName):
                     filePath = os.path.join(tempDir, 'upload.cif')
@@ -48,7 +50,7 @@ def uploadPDB_and_annotation(request):
                     # 解压
                     myzipfile.extractall(tempDir)
         
-        # params = myFunctions.load_POST(request)
+        
         params ={}
         params['job_name'] = request.POST.get('job_name')
         params['chain'] = request.POST.get('chain')
@@ -167,7 +169,7 @@ def align(request):
     annotateDBinfo = {
         "ECOD": ['/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'],
         "SCOP": ['/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain'],
-        "pdbDB": ["/dat1/nbt2/proj/21-prot/dat/pdb/pdb_ln"],
+        "pdbDB": ["/dat1/nbt2/proj/21-prot/dat/pdb/mmCIF_ln"],
         "AFDB": ["/dat1/nbt2/proj/21-prot/dat/alphafold/v2/all/AFDB_all"],
         "CATH":[]
     }   
@@ -179,7 +181,9 @@ def align(request):
     resFi = os.path.join(work_dir, "ecod.json")
     print(request)
     db_dir = annotateDBinfo[db_name][0]
-    db_pdb = os.path.join(db_dir,db_pdbName)
+    db_pdb = os.path.join(db_dir, db_pdbName)
+    if db_name in ['pdbDB']:
+        db_pdb = process_dbPDB(work_dir, db_pdb)
     upload_pdb = os.path.join(work_dir, "upload.pdb")
 
     tmalign = TMalign(work_dir, upload_pdb, db_pdb)
@@ -190,6 +194,23 @@ def align(request):
 
 
 ################################
+re_sp = re.compile(r'_')
+def process_dbPDB(work_dir, db_pdb):
+    if not re_sp.search(db_pdb):
+        return db_pdb
+    db_dir = os.path.dirname(db_pdb)
+    name = os.path.basename(db_pdb)
+    source_pdb_name, chain = re_sp.split(name,1)
+    source_pdb = os.path.join(db_dir, source_pdb_name)
+    pdbid = source_pdb_name.split('.')[0] + '.pdb'
+    new_pdb = os.path.join(work_dir,'tmpAlign',pdbid)
+    os.system("mkdir -p " + os.path.join(work_dir,'tmpAlign'))
+    atoms = prody.parseMMCIF(source_pdb, chain=chain)
+    if atoms:
+        writePrody = prody.writePDB(new_pdb, atoms)
+    return new_pdb
+
+
 class TMalign:
     def __init__(self, work_dir, pdb1, pdb2):
         self.matrixFi = os.path.join(work_dir, 'matrix')
@@ -265,44 +286,6 @@ class TMalign:
         self.rotate()
         self.merge2pdb()
 
-# TODO delete obselete
-def getMatrix(target, alignRes):
-    matrix = []
-    for item in alignRes:
-        if item["target"] == target:
-            t = [float(i) for i in item['t'].split(',')]
-            u = [float(i) for i in item['u'].split(',')]
-            print(t)
-            matrix =  np.array([
-                [t[0], u[0], u[3],u[6]],
-                [t[1], u[1], u[4],u[7]],
-                [t[2], u[2], u[5],u[8]],
-                ])
-            return matrix
-# TODO delete obselete
-def rotate(matrix, inPDB_1):
-        parser = PDB.PDBParser()
-        name = inPDB_1.split('.')[0]
-        struct = parser.get_structure(name, inPDB_1)
-        for model in struct:
-            for chain in model:
-                for residue in chain:
-                    for atom in residue:
-                        x, y, z = atom.coord
-                        X = matrix[0][0]     + matrix[0][1] * x + \
-                            matrix[0][2] * y + matrix[0][3] * z
-
-                        Y = matrix[1][0]     + matrix[1][1] * x + \
-                            matrix[1][2] * y + matrix[1][3] * z
-
-                        Z = matrix[2][0]     + matrix[2][1] * x + \
-                            matrix[2][2] * y + matrix[2][3] * z
-
-                        atom.coord = [X, Y, Z]
-        io = PDB.PDBIO()
-        io.set_structure(struct)
-        io.save('/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/results/e1960a66-ea52-48f0-905b-f4a4f6fc201f/test.pdb')
-        return struct
 
 
 def df_to_JSjson(df):
