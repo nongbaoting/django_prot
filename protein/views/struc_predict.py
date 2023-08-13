@@ -216,14 +216,14 @@ def structure_submit(request):
         print(seq)
         if reg_fasta.match(seq):
             pass
-        # elif reg_plainSeq.match(seq):
-        #     print('plain')
-        #     seq = f'>{job_name}\n' + reg_blank.sub('', seq) + '\n'
-        #     print("new_seq:", seq)
-        # elif reg_genebank.match(seq):
-        #     print('seq is genebank\n', seq)
-        #     seq = f'>{job_name}\n' + reg_genebankRep.sub('', seq) + '\n'
-        #     print("new_seq:", seq)
+        elif reg_plainSeq.match(seq):
+            print('plain')
+            seq = f'>{job_name}\n' + reg_blank.sub('', seq) + '\n'
+            print("new_seq:", seq)
+        elif reg_genebank.match(seq):
+            print('seq is genebank\n', seq)
+            seq = f'>{job_name}\n' + reg_genebankRep.sub('', seq) + '\n'
+            print("new_seq:", seq)
         else:
             data = {'uploadOk': False}
             return JsonResponse(data)
