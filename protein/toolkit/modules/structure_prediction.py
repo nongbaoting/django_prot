@@ -21,7 +21,7 @@ class RoseTTAFold2NA:
         self.work_dir = os.path.join(self.proj_dir, self.program)
         self.outdir   = os.path.join(self.work_dir,  'out')
         os.system('mkdir -p ' + self.outdir)
-        self.init_cmd = f'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;cd {self.work_dir};CUDA_VISIBLE_DEVICES=3 conda run -n RF2NA /dat1/apps/RoseTTAFoldNA/RoseTTAFold2NA/run_RF2NA.sh '
+        self.init_cmd = f'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;cd {self.work_dir};CUDA_VISIBLE_DEVICES=2 conda run -n RF2NA /dat1/apps/RoseTTAFoldNA/RoseTTAFold2NA/run_RF2NA.sh '
     
     def clear(self,):
         cmd = f'ssh -p3389 nong@172.22.148.150 "rm -rf {self.outdir}"'
@@ -43,7 +43,7 @@ class RoseTTAFold2NA:
 
     def run(self,protein_fasta, nucleic_type, nucleic_fasta):
         cmd =self.init_cmd + f' {self.outdir} {protein_fasta} {nucleic_type}:{nucleic_fasta}; cp -r {self.outdir}/models ."'
-        cmd_sh = os.path.join(self.outdir,'run.sh')
+        
         with open(cmd_sh, 'w') as fsh:
             fsh.write(cmd + '\n')
         subprocess.run(cmd, shell=True)
