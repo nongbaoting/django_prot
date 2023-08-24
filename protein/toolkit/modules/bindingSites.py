@@ -34,8 +34,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcol
 import matplotlib.cm as cm
 
-import matplotlib.pyplot as plt
-import numpy as np
 
 def map_color(value, min_value, max_value):
     normalized_value = (value - min_value) / (max_value - min_value)
@@ -144,11 +142,22 @@ def run_ppi(pdbFile,root_dir):
     scannet.run()
     return scannet.parse2protvista()
 class Main:
-    def run(self,pdbFile,root_dir):
+    def run_scannet(self,pdbFile,root_dir):
         import json
         track = run_ppi(pdbFile, root_dir)
         with open('track.json', 'w') as fp:
             json.dump(json.dumps(track), fp)
+
+
+class CLAPE:
+    def __init__(self,pdbFile, root_dir):
+        self.init_cmd = 'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;'
+        self.root_dir = os.path.abspath(root_dir)
+        self.pdbFile = os.path.abspath( pdbFile)
+        self.name = os.path.basename(pdbFile).split('.')[0]
+
+    def run(self):
+        cmd = "conda run -n CLAPE python /dat1/apps/CLAPE/clape.py --input example.fa --output CLAPE.txt"
 
 if __name__ == '__main__':
     print('')

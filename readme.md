@@ -102,3 +102,22 @@ mysql -u nongbt -pNBT9175.814@lys628  < /dat1/nbt2/proj/21-prot/web/data/mysql/n
 # source /home/abc/abc.sql
 
 # rm protein/migrations/*
+
+
+# structure annotation
+
+## binding site
+* GeoBind ,structure-base (server 150) 
+
+    https://github.com/zpliulab/GeoBind
+
+* clape # protein-DNA RNA ligand , sequence-base
+
+    https://github.com/YAndrewL/CLAPE/tree/main
+    python clape.py --input example.fa --output out.txt
+
+* scannet #* PPI, structure-base (server 150)
+
+* mymetal 
+
+    https://academic.oup.com/bioinformatics/article/38/14/3532/6594112?login=false#401869179
