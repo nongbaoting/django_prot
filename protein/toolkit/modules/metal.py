@@ -2,7 +2,7 @@ from mymetal import mbp
 
 class Mymetal:
 
-    def __init__(self,fasta) -> None:
+    def __init__(self,fasta):
         self.fasta = fasta
     
     def run(self):

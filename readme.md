@@ -111,13 +111,16 @@ mysql -u nongbt -pNBT9175.814@lys628  < /dat1/nbt2/proj/21-prot/web/data/mysql/n
 
     https://github.com/zpliulab/GeoBind
 
-* clape # protein-DNA RNA ligand , sequence-base
+* clape # protein-DNA RNA ligand , #sequence-base
 
     https://github.com/YAndrewL/CLAPE/tree/main
     python clape.py --input example.fa --output out.txt
 
-* scannet #* PPI, structure-base (server 150)
+* scannet #* PPI, #structure-base (server 150)
 
-* mymetal 
+* mymetal metal ！！！！#sequence-base
 
     https://academic.oup.com/bioinformatics/article/38/14/3532/6594112?login=false#401869179
+
+* LMetalSite metals #sequence-base
+    https://github.com/biomed-AI/LMetalSite
