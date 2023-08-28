@@ -1,5 +1,5 @@
-# broker_url ='redis://localhost:6379/1'
-broker_url ='redis://172.22.148.191:6379/0' # 发布
+broker_url ='redis://localhost:6379/1'
+# broker_url ='redis://172.22.148.191:6379/0' # 发布
 # result_backend = 'redis://localhost:6379/0' 
 result_backend = 'django-db'
 # task_serializer = 'json'

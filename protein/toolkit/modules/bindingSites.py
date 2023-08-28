@@ -93,7 +93,6 @@ class ScanNet:
         print(cmd)
         subprocess.run(cmd, shell=True)
 
-
     def parse2protvista(self):
         outdir = f'{self.root_dir}/scannet_out/{self.name}_single_ScanNet_interface_noMSA/'
         outCsv = outdir + f'predictions_{self.name}.csv'

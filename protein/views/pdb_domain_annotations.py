@@ -56,8 +56,8 @@ def uploadPDB_and_annotation(request):
         params['chain'] = request.POST.get('chain')
         print(tempDir)
         params['proj_type'] = "PDB Domain Annotations"
-        params['work_dir'] = os.path.join(pdb_annotations_dir,'results')
-        params['pdbfile'] =  filePath
+        params['work_dir'] = os.path.join(pdb_annotations_dir, 'results')
+        params['pdbfile'] =  pdbfile
         print(params)
         res = tasks.pdb_domain_annotations.apply_async(args = [params])
         myFunctions.create_submit_form(params, res)

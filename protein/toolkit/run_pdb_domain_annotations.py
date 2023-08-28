@@ -3,7 +3,7 @@ import subprocess
 from os import path
 from collections import defaultdict
 from protein.models import *
-from .modules import unidoc,sword2,bindingSites,interproscan, foldseek
+from .modules import unidoc,sword2,bindingSites,interproscan, foldseek, binding_CLAPE
 reg_cif = re.compile('cif$')
 def domain_annotations(params):
     '''
@@ -24,18 +24,24 @@ def domain_annotations(params):
     
     # run PPI py_scannet
     ppi_track = bindingSites.run_ppi(pdbfile,work_dir)
+    dna_track, rna_track, antibody_track = binding_CLAPE.run_clape(pdbfile,work_dir)
 
     # run interproscan
     interproscan.run_interproscan(work_dir)
     
     ## annotation
     foldseek.run_annotate(pdbfile,work_dir)
-    
+ 
     protvistaTrackFi = os.path.join(work_dir,"protvistData.json")
     tracks = []
     tracks.append(sword2_track['upload'])
     tracks.append(unidoc_track)
     tracks.append(ppi_track)
+
+    tracks.append(dna_track)
+    tracks.append(rna_track)
+    tracks.append(antibody_track)
+
     protvistaData = {
         "displayNavigation": True,
         "displaySequence": True,

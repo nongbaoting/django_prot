@@ -102,10 +102,12 @@ class Foldseek:
         for  item in data:
             # uid,uniprot,pdbid,chain,pdb_range,*_ = item['target'].split('.')
             uid = item['target'].split('.')[0]
-            cell = dt[uid]
-            # print(uid, cell)
             item['pdbid'] =uid.upper()
-            item['desc'] = cell[3]
+            item['desc'] = ''
+            if uid in dt:
+                cell = dt[uid]
+                print(uid, cell)
+                item['desc'] = cell[3]
             webDt.append(item)
          
         with open(outJsonFi, 'w') as fo:
@@ -190,7 +192,6 @@ class Main:
         pickle.dump(dt, fo)
         fo.close()
 
-    
     def pickle_scope(Fi="/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt", outFi="scope-cla.pickle"):
         dt = defaultdict(list)
         with open(Fi) as f:
@@ -199,9 +200,9 @@ class Main:
                 cell = li.strip().split("\t")
                 dt[cell[0]] = cell
         return dt
-        fo =  open(outFi, 'wb')
-        pickle.dump(dt, fo)
-        fo.close()
+        # fo =  open(outFi, 'wb')
+        # pickle.dump(dt, fo)
+        # fo.close()
                 
 
 
