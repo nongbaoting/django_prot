@@ -12,7 +12,7 @@ def domain_annotations(params):
     work_dir = create_tmpDir(params['work_dir'], params['uuid'])
     pdbfile = params['pdbfile']
     chain = params['chain']
-
+    write_params(params, work_dir)
     if reg_cif.search(pdbfile):
         pdbfile_change = os.path.join(work_dir,'upload.pdb')
         cif2pdb(pdbfile, pdbfile_change)
@@ -70,3 +70,9 @@ def cif2pdb(cifFile,pdbFile):
     io = Bio.PDB.PDBIO()
     io.set_structure(structure)
     io.save(pdbFile)
+
+def write_params(params,workdir):
+    paramsFi = os.path.join(workdir, 'params.json')
+    with open(paramsFi, 'w') as fp:
+        json.dump(json.dumps(params), fp)
+

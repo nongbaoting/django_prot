@@ -76,7 +76,7 @@ def color_pick(c):
     # can be passed to plt.colorbar().
     cpick = cm.ScalarMappable(norm=cnorm,cmap=cm_br)
     cpick.set_array([])
-    a = cpick.to_rgba(0.5)
+    a = cpick.to_rgba(c)
 
     return mcol.to_hex(a)
 
