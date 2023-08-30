@@ -3,7 +3,7 @@ import subprocess
 from os import path
 from collections import defaultdict
 from protein.models import *
-from .modules import unidoc,sword2,bindingSites,interproscan, foldseek, binding_CLAPE
+from .modules import unidoc,sword2,bindingSites,interproscan, foldseek, binding_CLAPE,metal
 reg_cif = re.compile('cif$')
 def domain_annotations(params):
     '''
@@ -26,12 +26,15 @@ def domain_annotations(params):
     ppi_track = bindingSites.run_ppi(pdbfile,work_dir)
     dna_track, rna_track, antibody_track = binding_CLAPE.run_clape(pdbfile,work_dir)
 
+    # metal ions
+    ZN,CA,MG,MN = metal.run_LMetalSite(pdbfile,work_dir)
+
     # run interproscan
     interproscan.run_interproscan(work_dir)
     
     ## annotation
     foldseek.run_annotate(pdbfile,work_dir)
- 
+    
     protvistaTrackFi = os.path.join(work_dir,"protvistData.json")
     tracks = []
     tracks.append(sword2_track['upload'])
@@ -41,6 +44,10 @@ def domain_annotations(params):
     tracks.append(dna_track)
     tracks.append(rna_track)
     tracks.append(antibody_track)
+    tracks.append(ZN)
+    tracks.append(CA)
+    tracks.append(MG)
+    tracks.append(MN)
 
     protvistaData = {
         "displayNavigation": True,

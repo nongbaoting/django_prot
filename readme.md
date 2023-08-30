@@ -106,6 +106,11 @@ mysql -u nongbt -pNBT9175.814@lys628  < /dat1/nbt2/proj/21-prot/web/data/mysql/n
 
 # structure annotation
 
+
+## IDR 
+flDPnn
+https://www.nature.com/articles/s41467-021-24773-7
+
 ## binding site
 * GeoBind ,structure-base (server 150) 
 
@@ -124,3 +129,8 @@ mysql -u nongbt -pNBT9175.814@lys628  < /dat1/nbt2/proj/21-prot/web/data/mysql/n
 
 * LMetalSite metals #sequence-base
     https://github.com/biomed-AI/LMetalSite
+
+* MetalNet #sequence-base
+    https://github.com/wangchulab/MetalNet
+* Metal3D
+    https://www.nature.com/articles/s41467-023-37870-6#Sec2
