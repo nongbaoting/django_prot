@@ -25,9 +25,7 @@ def lMetalSite2protvista(score_, site_,label):
     sites  = site_.split(',')
     print(sites)
     for index, char in enumerate(sites):
-        print(char)
         if char == "1":
-
             fragment_ = {
                 "start": index + 1,
                 "end": index + 1, 
