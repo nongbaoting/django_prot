@@ -1,5 +1,5 @@
 
-import fire, os, subprocess, re
+import fire, os, subprocess, re, json
 import pandas as pd
 
 def pdb2fasta(pdbFile, FaFi):
@@ -11,7 +11,7 @@ def flDPnn2protvista(outFi):
     sites,bins,scores = [],[],[]
     with open(outFi,'r') as f:
         for li in f:
-            if re.match('>', li):
+            if re.match('>',li):
                 id = li.strip().split('\s')[0][1:]
                 sites = next(f).strip().split(',')
                 bins = next(f).strip().split(',')
@@ -24,24 +24,27 @@ def flDPnn2protvista(outFi):
     fragment_score = []
     for index, char in enumerate(bins):
         # print(char)
-        if char == "1":
+        if char == "1" and end ==0:
             fragment_score.append(scores[index])
             start = index +1
+            end = 1
         elif char =="0" and start !=0:
-            end = index +1
+            end = index 
             fragment_ = {
                     "start": start,
                     "end": end, 
                     "tooltipContent": f"IDR <br>Range: {start} - {end}", 
-                    "color": 'grey', 
+                    "color": '#BC80BD', 
+                    "score":fragment_score
                     }
             start,end = 0,0
+            fragment_score = []
             fragments.append(fragment_)
     
     fragments_dt = {"fragments":fragments}
     data_subtrack = {
                         "accession": 'IDR' ,
-                        "type": 'IDR Domain',
+                         "type": 'Domain',
                         "label": "flDPnn",
                         "labelTooltip":"IDR",
                         "locations": [{"fragments":fragments}
@@ -72,10 +75,14 @@ class flDPnn:
         cmd = self.init_cmd
         cmd += f"docker run -i sinaghadermarzi/fldpnn fldpnn/dockerinout < {self.FaFi} > fldpnn_results.tar.gz; tar -xvf fldpnn_results.tar.gz"
         print(cmd)
-        subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
+        # subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
         self.parse()
     def parse(self):
         self.res =  flDPnn2protvista(self.outFi)
+    
+    def save(self,outJson):
+        with open(outJson, 'w') as fp:
+            json.dump(json.dumps(self.res), fp)
 
 def run_idr(pdbFile, root_dir):
     lms = flDPnn(pdbFile, root_dir)
@@ -90,7 +97,9 @@ class Main:
         metal.run()
         metal.save
     def run_idr(self,pdbFile, root_dir):
-        run_idr(pdbFile, root_dir)
+        lms = flDPnn(pdbFile, root_dir)
+        lms.run()
+        lms.save("flDPnn.json")
 
 if __name__ == "__main__":
     fire.Fire(Main)
