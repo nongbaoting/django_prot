@@ -552,6 +552,34 @@ class RUN:
             PDBentry.objects.bulk_create(info)
         print(all + count)
 
+    def RepeatDomain(self, Fi="/home/nbt2/proj/23-NewEditing/repeatProtein/nr/CDD/nr.repeat-200_2k.archi"):
+        from protein.models import RepeatDomain
+        RepeatDomain.objects.all().delete()
+        info = []
+        count, all = 0, 0
+        with open(Fi) as f:
+            next(f)
+            for li in f:
+                cell = li.rstrip('\n').split("\t")
+                q = RepeatDomain(
+                    dm_names    = cell[0],
+                    clusters    = cell[1],
+                    numProtein  = cell[2],
+                    min_len     = cell[3],
+                    max_len     = cell[4],
+                    reprProtein = cell[5]
+                )
+                info.append(q)
+                count += 1
+                if count > 100000:
+                    all += count
+                    print("now:", all, "add:", count)
+                    RepeatDomain.objects.bulk_create(info)
+                    count = 0
+                    info = []
+        if count > 0:
+            RepeatDomain.objects.bulk_create(info)
+        print(all + count)
 
 if __name__ == '__main__':
     fire.Fire(RUN)

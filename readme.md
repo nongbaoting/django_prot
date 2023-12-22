@@ -9,13 +9,13 @@ python manage.py startapp protein
 # 应用数据库
 
 ## 更改
-
+```
 python manage.py makemigrations protein
 python manage.py migrate
 
 python txt2db.py geneinfo  ../django_21/sprot_info.txt
 python txt2db.py Structure ../django_21/sprot_file_relate.txt
-
+```
 ## del
 
 from protein.models import *; all = SubmitInfoNew.objects.all() ;  all.delete()

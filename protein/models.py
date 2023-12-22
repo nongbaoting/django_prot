@@ -186,3 +186,13 @@ class PDBentry(models.Model):
     EXPERIMENT_TYPE = models.CharField(max_length=100)
 
 
+## result
+### repeat domain
+
+class RepeatDomain(models.Model):
+    dm_names =  models.TextField( db_index=True)
+    clusters = models.TextField( )
+    numProtein  = models.IntegerField()
+    min_len = models.IntegerField()
+    max_len = models.IntegerField()
+    reprProtein = models.CharField(max_length=255, db_index=True)
