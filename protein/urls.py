@@ -8,7 +8,7 @@ from .views import phylogenetic
 from .views import jobQueue
 from .views import domain_pdbe
 from .views import pdb_domain_annotations
-from .views.results import tada_like,csr
+from .views.results import tada_like,csr, repeatDomain
 from .views import test
 
 app_name = 'protein'
@@ -80,12 +80,20 @@ urlpatterns = [
     path("api/pdb_domain_annotations/get_pdbFile/", pdb_domain_annotations.get_pdbFile),
     path("api/pdb_domain_annotations/align/", pdb_domain_annotations.align),
 
-    # tadA_like
+    # tadA_like, results
     path("api/results/tada_like/", tada_like.interpro),
     path("api/results/get_pdbFile/", tada_like.get_pdbFile),
      path("api/results/csr_like/", csr.interpro),
     path("api/results/csr_pdbFile/", csr.get_pdbFile),
+    ## repeat proteins
+     path("api/results/repeatDomain/fetchData/", repeatDomain.fetchData),
+     path("api/results/repeatDomain/fetchProteins/", repeatDomain.fetchProteins),
+
 
     # test
     path("api/test/get_pdbFile/", test.get_pdbFile),
+
+
+   
+
 ]

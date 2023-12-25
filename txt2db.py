@@ -580,6 +580,31 @@ class RUN:
         if count > 0:
             RepeatDomain.objects.bulk_create(info)
         print(all + count)
+    def RepeatProtein(self, Fi="/home/nbt2/proj/23-NewEditing/repeatProtein/nr/CDD/nr.repeat-200_2k.0.5.fa_cluster.tsv"):
+        from protein.models import RepeatProtein
+        RepeatProtein.objects.all().delete()
+        info = []
+        count, all = 0, 0
+        with open(Fi) as f:
+            next(f)
+            for li in f:
+                cell = li.rstrip('\n').split("\t")
+                q = RepeatProtein(
+                   reprProtein = cell[0],
+                   protein = cell[1]
+                )
+                info.append(q)
+                count += 1
+                if count > 100000:
+                    all += count
+                    print("now:", all, "add:", count)
+                    RepeatProtein.objects.bulk_create(info)
+                    count = 0
+                    info = []
+        if count > 0:
+            RepeatProtein.objects.bulk_create(info)
+        print(all + count)
+
 
 if __name__ == '__main__':
     fire.Fire(RUN)

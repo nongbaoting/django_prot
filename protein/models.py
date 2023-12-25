@@ -196,3 +196,7 @@ class RepeatDomain(models.Model):
     min_len = models.IntegerField()
     max_len = models.IntegerField()
     reprProtein = models.CharField(max_length=255, db_index=True)
+
+class RepeatProtein(models.Model):
+    reprProtein = models.CharField(max_length=255, db_index=True)
+    protein = models.CharField(max_length=255, db_index=True)
