@@ -4,9 +4,9 @@ broker_url ='redis://localhost:6379/1'
 
 # conda activate webProt
 ### 更新
-# cd /dat1/nbt2/server/PROTsim/public/
-# mv django_prot bak/
-# cp -r ../django_prot .
+cd /dat1/nbt2/server/PROTsim/public/
+mv django_prot bak/
+cp -r ../django_prot .
 cd /dat1/nbt2/server/PROTsim/public/django_prot
 conda activate webProt
 #python run_predict.py watch_blast > logs/blast.log 2>&1 &
