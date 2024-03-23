@@ -8,7 +8,7 @@ from .views import phylogenetic
 from .views import jobQueue
 from .views import domain_pdbe
 from .views import pdb_domain_annotations
-from .views.results import tada_like,csr, repeatDomain
+from .views.results import tada_like,csr
 from .views import test
 
 app_name = 'protein'
@@ -26,8 +26,7 @@ urlpatterns = [
     path('predict/structure/check/', struc_predict.check_proj, name="check_proj"),
     path('api/structure/queue/', struc_predict.struc_queue, name='struc_queue'),
     path('api/structure/search/', struc_predict.struc_search, name='struc_search'),
-    path("api/structure/getFile/",
-         struc_predict.struc_getFile, name='struct_getFile'),
+    path("api/structure/getFile/", struc_predict.struc_getFile, name='struct_getFile'),
     path("api/structure/getTemplate/", struc_predict.struc_template),
 
     # new
@@ -78,22 +77,20 @@ urlpatterns = [
     path("api/pdb_domain_annotations/uploadPDB_and_annotation/", pdb_domain_annotations.uploadPDB_and_annotation),
     path("api/pdb_domain_annotations/parser_results/", pdb_domain_annotations.parser_results),
     path("api/pdb_domain_annotations/get_pdbFile/", pdb_domain_annotations.get_pdbFile),
+    path("api/pdb_domain_annotations/get_alignPDBfile/", pdb_domain_annotations.get_alignPDBfile),
     path("api/pdb_domain_annotations/align/", pdb_domain_annotations.align),
-
-    # tadA_like, results
+    path("api/pdb_domain_annotations/check_align/", pdb_domain_annotations.check_TMalign),
+    path("api/pdb_domain_annotations/browse/", pdb_domain_annotations.browse),
+    path("api/pdb_domain_annotations/check_job/", pdb_domain_annotations.check_job),
+    path("api/pdb_domain_annotations/example_pdb/", pdb_domain_annotations.example_pdb),
+    
+    
+    # tadA_like
     path("api/results/tada_like/", tada_like.interpro),
     path("api/results/get_pdbFile/", tada_like.get_pdbFile),
      path("api/results/csr_like/", csr.interpro),
     path("api/results/csr_pdbFile/", csr.get_pdbFile),
-    ## repeat proteins
-     path("api/results/repeatDomain/fetchData/", repeatDomain.fetchData),
-     path("api/results/repeatDomain/fetchProteins/", repeatDomain.fetchProteins),
-
 
     # test
     path("api/test/get_pdbFile/", test.get_pdbFile),
-
-
-   
-
 ]

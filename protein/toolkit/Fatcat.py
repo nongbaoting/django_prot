@@ -24,9 +24,7 @@ class Fatcat:
         dirname_2 = os.path.dirname(self.path_2)
         basename_1 = os.path.basename(self.path_1)
         basename_2 = os.path.basename(self.path_2)
-
         cmd = f'cd {self.tempDir}; FATCAT  -i1 {dirname_1} -i2 {dirname_2} -p1 {basename_1} -p2 {basename_2} -q -t; cp tmp.opt.twist.pdb { self.outFi }'
-
         run = run_cmd(cmd)
         log = run.stdout.decode('utf-8')
         self.content = {

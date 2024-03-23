@@ -56,6 +56,7 @@ def to_track(item):
         }
     
     rowConfigData.append(seq_track)
+    
     family_track = {
         "trackId": "Family_track",
         "rowTitle": "Family",
@@ -166,7 +167,7 @@ class InterproScan:
         self.dt = dict()
     
     def run(self,work_dir):
-        cmd = f"cd {work_dir};interproscan.sh -i seqs.fasta -f tsv, json -dp -cpu 4"
+        cmd = f"cd {work_dir}; /apps/data/interproscan/interproscan.sh -i seqs.fasta -f tsv, json -dp -cpu 4"
         subprocess.run(cmd, shell=True)
     def parse(self, jsonFi):
         with open(jsonFi, "r") as f:

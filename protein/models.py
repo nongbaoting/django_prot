@@ -6,8 +6,6 @@ from django.utils import timezone
 import datetime
 
 # from django_prot import protein
-
-
 class SubmitInfo(models.Model):
     email_addr = models.EmailField(max_length=50)
     proj_name = models.CharField(max_length=50)
@@ -48,8 +46,6 @@ class AF_uniprot(models.Model):
     length = models.IntegerField()
 
 # blast
-
-
 class SubmitInfoNew(models.Model):
     uuid = models.CharField(max_length=50)
     proj_type = models.CharField(max_length=50)
@@ -186,17 +182,3 @@ class PDBentry(models.Model):
     EXPERIMENT_TYPE = models.CharField(max_length=100)
 
 
-## result
-### repeat domain
-
-class RepeatDomain(models.Model):
-    dm_names =  models.TextField( db_index=True)
-    clusters = models.TextField( )
-    numProtein  = models.IntegerField()
-    min_len = models.IntegerField()
-    max_len = models.IntegerField()
-    reprProtein = models.CharField(max_length=255, db_index=True)
-
-class RepeatProtein(models.Model):
-    reprProtein = models.CharField(max_length=255, db_index=True)
-    protein = models.CharField(max_length=255, db_index=True)

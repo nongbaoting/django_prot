@@ -12,7 +12,10 @@ import subprocess
 from Bio import SeqIO
 
 colorSet3D = [
-"#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666", "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999", "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"
+"#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", 
+"#666666", "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", 
+"#a65628", "#f781bf", "#999999", "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3",
+ "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"
 ]
 
 def scanAndFind_pattern(mydir, mypattern):
@@ -111,7 +114,7 @@ class Sword2:
         dt_pt = {}
         for entry in entries:
             entry_id = self.sep_reg.split(entry.path)[-2].split('_')[0]
-            seq_id = entry_id +':A'
+            seq_id = entry_id 
             data = self.parse(entry.path, seq_id)
             data_pt = self.parse2protvista(entry.path, seq_id)
             dt[entry_id] = data
@@ -192,7 +195,7 @@ class Sword2:
 
     def run(self,pdbfile,chain,work_dir):
         
-        cmd = f'cd {work_dir};conda run -n sword2 /dat1/apps/SWORD2/SWORD2.py -i  {pdbfile} -o result -c {chain} -x 4'
+        cmd = f'cd {work_dir};conda run -n sword2 /apps_dk/SWORD2/SWORD2.py -i  {pdbfile} -o result -c {chain} -x 8'
         
         subprocess.run(cmd, shell=True)
 
@@ -200,7 +203,7 @@ def run_sword2(pdbfile,chain, work_dir):
     sword2 = Sword2()
     fasta_seq = os.path.join(work_dir,'seqs.fasta')
     pdbfile_ln = os.path.join(work_dir,'upload.pdb')
-    cmd = f'cp  {pdbfile} {pdbfile_ln};pdb2fasta {pdbfile_ln} > {fasta_seq}'
+    cmd = f'cp  {pdbfile} {pdbfile_ln}'
     subprocess.run(cmd,shell=True)
 
     sword2.run(pdbfile_ln,chain,work_dir)
@@ -208,7 +211,8 @@ def run_sword2(pdbfile,chain, work_dir):
     outFi = os.path.join(work_dir,'sword2.track.json')
     outFiProtvista = os.path.join(work_dir,'sword2.protvistaTrack.json')
     sword2_track = sword2.scandir(work_dir,outFi,outFiProtvista)
-    return  sword2_track,str(sword2.fasta['upload:A'].seq)
+    seq_id = list(sword2.fasta.keys())[0]
+    return  sword2_track,str(sword2.fasta[seq_id].seq)
 
 class Main:
     def run(self,pdbfile,chain,work_dir):

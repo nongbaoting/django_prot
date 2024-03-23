@@ -18,7 +18,7 @@ class Foldseek:
         self.pdbFi = pdbFi 
         
     def run_cmd(self,foldseek_db,outFi):
-        cmd = f'/dat1/nbt2/miniconda3/bin/foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t"'
+        cmd = f'conda run -n base foldseek easy-search {self.pdbFi} {foldseek_db} {outFi} tmp2 --format-output "query,target,fident,alnlen,mismatch,gapopen,qlen,qstart,qend,tstart,tend,evalue,bits,prob,alntmscore,qtmscore,ttmscore,u,t"'
         print(cmd)
         run = subprocess.run(cmd, shell=True)
        
@@ -140,15 +140,15 @@ def run_annotate( pdbFi,outDir):
 
     ecod_out = os.path.join(outDir, 'ecod.txt')
     ecod_json = os.path.join(outDir, 'ecod.json')
-    ecod_foldseekDB = '/dat1/dat/db/foldseek/ecod/F70/foldseek/foldseek_ECOD_F70'
-    ecodInfoFi = "/dat1/dat/db/ECOD/F70/ecod.F70.pickle"
+    ecod_foldseekDB = '/apps/data/PDB/foldseekDB/ECOD/foldseek_ECOD_F70'
+    ecodInfoFi = "/apps/data/PDB/Info/ecod.F70.pickle"
     foldseek.run_cmd(ecod_foldseekDB,ecod_out)
     foldseek.format_ECOD(ecod_out, ecod_json,ecodInfoFi)
 
     scop_out = os.path.join(outDir, 'scop.txt')
     scop_json = os.path.join(outDir, 'scop.json')
-    scop_foldseekDB = '/dat1/dat/db/foldseek/scop2/foldseek/foldseek_scopDomain'
-    scopInfoFi = "/dat1/nbt2/proj/21-prot/dat/Scope2/scop-cla-latest.tab.txt"
+    scop_foldseekDB = '/apps/data/PDB/foldseekDB/SCOP2/foldseek_scopDomain'
+    scopInfoFi = "/apps/data/PDB/Info/scop-cla-latest.tab.txt"
     foldseek.run_cmd(scop_foldseekDB,scop_out)
     foldseek.format_SCOP(scop_out, scop_json, scopInfoFi)
     
@@ -162,15 +162,15 @@ def run_annotate( pdbFi,outDir):
 
     pdbDB_out = os.path.join(outDir, 'pdbDB.txt')
     pdbDB_json = os.path.join(outDir, 'pdbDB.json')
-    pdbDB_foldseekDB = '/dat1/dat/db/foldseek/pdbDB/foldseek_PDB'
-    pdbDBInfoFi = "/dat1/nbt2/proj/21-prot/dat/pdb/derived_data/index/entries.idx"
+    pdbDB_foldseekDB = '/apps/data/PDB/foldseekDB/pdbDB/foldseek_PDB'
+    pdbDBInfoFi = "/apps/data/PDB/Info/entries.idx"
     foldseek.run_cmd(pdbDB_foldseekDB,pdbDB_out)
     foldseek.format_pdbDB(pdbDB_out, pdbDB_json,pdbDBInfoFi)
 
     AFDB_out = os.path.join(outDir, 'AFDB.txt')
     AFDB_json = os.path.join(outDir, 'AFDB.json')
-    AFDB_foldseekDB = '/dat1/dat/db/foldseek/AFDB/foldseek_PDB_AFDB'
-    AFDBInfoFi = "/dat1/dat/db/uniprot/subset/afdb.info"
+    AFDB_foldseekDB = '/apps/data/PDB/foldseekDB/AFDB/foldseek_PDB_AFDB'
+    AFDBInfoFi = "/apps/data/PDB/Info/afdb.info"
     foldseek.run_cmd(AFDB_foldseekDB,AFDB_out)
     foldseek.format_AFDB(AFDB_out, AFDB_json,AFDBInfoFi)
 

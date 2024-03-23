@@ -2,6 +2,21 @@
 import fire, os,subprocess
 import pandas as pd
 
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcol
+import matplotlib.cm as cm
+def map_color(value, min_value, max_value):
+    normalized_value = (value - min_value) / (max_value - min_value)
+    cmap = plt.cm.get_cmap('RdYlGn')  # 选择色谱，这里使用红黄绿色谱
+    rgba = cmap(normalized_value)
+    red = int(rgba[0] * 255)
+    green = int(rgba[1] * 255)
+    blue = int(rgba[2] * 255)
+    color = (red, green, blue)
+    hex_color = '#%02x%02x%02x' % color
+    return hex_color
+
 class Mymetal:
 
     def __init__(self,fasta):
@@ -23,34 +38,26 @@ def lMetalSite2protvista(score_, site_,label):
     fragments = []
     scores = score_.split(',')
     sites  = site_.split(',')
-    print(sites)
+
     for index, char in enumerate(sites):
         if char == "1":
             fragment_ = {
                 "start": index + 1,
                 "end": index + 1, 
-                "tooltipContent": f"Position: {index}, Probability: {scores[index]}", 
-                "color": '#DC143C'
+                "tooltipContent": f"{label}, Probability: {scores[index]}", 
+                "color":  map_color(float(scores[index]),0,1)
             }
             fragments.append(fragment_)
     
-    fragments_dt = {"fragments":fragments}
     data_subtrack = {
                     "accession": 'LMetalSite' ,
-                    "type": 'site',
-                    "label": "LMetalSite" ,
+                    "type": 'Binding Site:',
+                    "label": f"{label}" ,
                     "shape": 'circle',
-                   
-                    "locations": [fragments_dt]
+                    "locations": [{"fragments":fragments}]
                     }
     
-    track = {
-           "label": f'{label}',
-           "labelType": 'text',
-           "data":[data_subtrack]
-        }
-    
-    return track
+    return data_subtrack
 
 
 class LMetalSite:
@@ -61,24 +68,39 @@ class LMetalSite:
         self.outDir = os.path.join(self.root_dir, self.__class__.__name__ )
         self.outFi =  os.path.join(self.root_dir, self.__class__.__name__, 'seqs_predictions.csv')
         subprocess.run('mkdir -p ' + self.outDir, stdout=subprocess.PIPE, shell=True)
-        self.init_cmd = 'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;'
         self.res = []
     def run(self):
-        pdb2fasta(self.pdbFile, self.FaFi)
-        cmd = self.init_cmd
-        cmd += f"conda run -n LMetalSite python /dat1/apps/LMetalSite/script/LMetalSite_predict.py --fasta {self.FaFi} --outpath {self.outDir}"
-        cmd +='"'
+        # pdb2fasta(self.pdbFile, self.FaFi)
+        cmd = f"conda run -n LMetalSite python /apps_dk/LMetalSite/script/LMetalSite_predict.py --fasta {self.FaFi} --outpath {self.outDir}"
+       
         print(cmd)
         subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
         self.parse()
     def parse(self):
         dt = pd.read_csv(self.outFi,dtype=str)
         print(dt.columns)
-        ZN = lMetalSite2protvista(dt.ZN_prob[0], dt.ZN_pred[0],'Zn')
-        CA = lMetalSite2protvista(dt.CA_prob[0], dt.CA_pred[0],'Ca')
-        MG = lMetalSite2protvista(dt.MG_prob[0], dt.MG_pred[0],'Mg+')
-        MN = lMetalSite2protvista(dt.MN_prob[0], dt.MN_pred[0],'Mn+')
-        self.res =  [ZN,CA,MG,MN]
+        ZN = lMetalSite2protvista(dt.ZN_prob[0], dt.ZN_pred[0], 'Zn')
+        CA = lMetalSite2protvista(dt.CA_prob[0], dt.CA_pred[0], 'Ca')
+        MG = lMetalSite2protvista(dt.MG_prob[0], dt.MG_pred[0], 'Mg')
+        MN = lMetalSite2protvista(dt.MN_prob[0], dt.MN_pred[0], 'Mn')
+        data_subtrack = []
+        if len(ZN['locations'][0]['fragments']) >0:
+            print("ZN:", ZN)
+            data_subtrack.append(ZN)
+        if len(CA['locations'][0]['fragments']) >0:
+            data_subtrack.append(CA) 
+        if len(MG['locations'][0]['fragments']) >0:
+            data_subtrack.append(MG)
+        if len(MN['locations'][0]['fragments']) >0:
+            data_subtrack.append(MN)
+
+        track = {
+           "label": f'Metal Ion',
+           "labelType": 'text',
+           "data":data_subtrack
+        }
+        self.res =  track
+
 def run_LMetalSite(pdbFile, root_dir):
     lms = LMetalSite(pdbFile, root_dir)
     lms.run()

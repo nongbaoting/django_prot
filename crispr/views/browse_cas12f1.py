@@ -16,7 +16,6 @@ def parse_info(infoFile = infoFile):
             n=1
         for li in f:
             cell = li.strip('\n').split("\t")
-            
             dt = {
             "chain1": cell[0],
             "chain2_acc": cell[1].split("-cf")[0],
@@ -43,13 +42,13 @@ def parse_info(infoFile = infoFile):
             data.append(dt)
     return data
 
-cas12f1 = parse_info()
-cas12f1_2 = parse_info(infoFile2)
+# cas12f1 = parse_info()
+# cas12f1_2 = parse_info(infoFile2)
 
-cas12f1_3 = parse_info(infoFile_asCluster)
-cas12f1.extend(cas12f1_2)
-cas12f1.extend(cas12f1_3)
-re_field = re.compile(r'fields.')
+# cas12f1_3 = parse_info(infoFile_asCluster)
+# cas12f1.extend(cas12f1_2)
+# cas12f1.extend(cas12f1_3)
+# re_field = re.compile(r'fields.')
 
 def alignFatcatScore(request):
     # 分页

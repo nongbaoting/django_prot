@@ -9,6 +9,7 @@
 
 import os, sys, fire, re, gzip,subprocess
 # from functions import *
+
 colorSet3D = [
     "#27A3B4",
     # "#C08423",
@@ -28,13 +29,10 @@ colorSet3D = [
     '#A6761D',
 ]
 
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcol
 import matplotlib.cm as cm
-
-
 def map_color(value, min_value, max_value):
     normalized_value = (value - min_value) / (max_value - min_value)
     cmap = plt.cm.get_cmap('RdYlGn')  # 选择色谱，这里使用红黄绿色谱
@@ -83,13 +81,13 @@ def color_pick(c):
 class ScanNet:
 
     def __init__(self,pdbFile,root_dir):
-        self.init_cmd = 'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;conda run -n py_scannet python /dat1/apps/ScanNet/predict_bindingsites.py '
+        self.init_cmd = 'conda run -n py_scannet python /apps_dk/ScanNet/predict_bindingsites.py '
         self.root_dir = os.path.abspath(root_dir)
         self.pdbFile = os.path.abspath( pdbFile)
         self.name = os.path.basename(pdbFile).split('.')[0]
     
     def run(self):
-        cmd = self.init_cmd + f'{self.pdbFile}  --noMSA --predictions_folder {self.root_dir}/scannet_out"'
+        cmd = self.init_cmd + f'{self.pdbFile}  --noMSA --predictions_folder {self.root_dir}/scannet_out'
         print(cmd)
         subprocess.run(cmd, shell=True)
 
@@ -156,7 +154,7 @@ class CLAPE:
         self.name = os.path.basename(pdbFile).split('.')[0]
 
     def run(self):
-        cmd = "conda run -n CLAPE python /dat1/apps/CLAPE/clape.py --input example.fa --output CLAPE.txt"
+        cmd = "conda run -n CLAPE python /dat1/apps2/CLAPE/clape.py --input example.fa --output CLAPE.txt"
 
 if __name__ == '__main__':
     print('')

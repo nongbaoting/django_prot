@@ -27,7 +27,9 @@ SECRET_KEY = '1x^q9bu8+u6g9hr&q)y8ky*)0j$%=3my0zx-4ivz(=o^3-&a2w'
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '222.200.186.47', '222.200.186.47:9111', '222.200.186.47:9112',
-                 '222.200.186.47:8080', '::1', 'localhost', '*', ]
+                 '222.200.186.47:8080', '::1', 'localhost', '*',
+                 'bioinfo-sysu.com', '0.0.0.0'
+                  ]
 
 
 # Application definition
@@ -103,37 +105,37 @@ WSGI_APPLICATION = 'django_prot.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     },
-#     # "slave": {
-#     #     "ENGINE": "django.db.backends.mysql",
-#     #     "NAME": "nongbt_db",
-#     #     "USER": "nongbt",
-#     #     "PASSWORD": "NBT9175.814@lys628",
-#     #     "HOST": "",
-#     #     "PORT": "3306",
-#     # },
-# }
-
 DATABASES = {
     'default': {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "nongbt_db",
-        "USER": "root",
-        "PASSWORD": "NBT9175.814@lys628",
-        # "HOST": "localhost",
-        "HOST": "172.22.148.191",
-        "PORT": "3306",
-        # 'OPTIONS': {
-
-        #     'charset': 'utf8',
-        #     'collation': 'utf8_bin',
-        # },
-    }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    # "slave": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": "nongbt_db",
+    #     "USER": "nongbt",
+    #     "PASSWORD": "NBT9175.814@lys628",
+    #     "HOST": "",
+    #     "PORT": "3306",
+    # },
 }
+
+# DATABASES = {
+#     'default': {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "nongbt_db",
+#         "USER": "root",
+#         "PASSWORD": "NBT9175.814@lys628",
+#         # "HOST": "localhost",
+#         "HOST": "172.22.148.191",
+#         "PORT": "3306",
+#         # 'OPTIONS': {
+
+#         #     'charset': 'utf8',
+#         #     'collation': 'utf8_bin',
+#         # },
+#     }
+# }
 
 
 # Password validation

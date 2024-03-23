@@ -62,7 +62,7 @@ class RUN:
         f.close()
         Structure.objects.bulk_create(info)  # change
 
-    def AF_uniprot(self, Fi="/dat1/nbt2/proj/21-prot/alphafold/uniprot_info/uniprot-proteome_UP000005640.tab"):
+    def AF_uniprot(self, Fi="/dat1/dat/db/alphafoldDB/uniprotkb_proteome_UP000005640_2023_12_26.tsv"):
         from protein.models import AF_uniprot
         all = AF_uniprot.objects.all()
         all.delete()
@@ -74,8 +74,9 @@ class RUN:
                 cell = li.strip('\n').split("\t")
                 q = AF_uniprot(
                     uniprot=cell[0],
-                    uniprot_name=cell[1],
-                    status=cell[2],
+                    status=cell[1],
+                    uniprot_name=cell[2],
+                    
                     protein_names=cell[3],
                     gene_names=cell[4],
                     organism=cell[5],
@@ -550,59 +551,6 @@ class RUN:
                     info = []
         if count > 0:
             PDBentry.objects.bulk_create(info)
-        print(all + count)
-
-    def RepeatDomain(self, Fi="/home/nbt2/proj/23-NewEditing/repeatProtein/nr/CDD/nr.repeat-200_2k.archi"):
-        from protein.models import RepeatDomain
-        RepeatDomain.objects.all().delete()
-        info = []
-        count, all = 0, 0
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.rstrip('\n').split("\t")
-                q = RepeatDomain(
-                    dm_names    = cell[0],
-                    clusters    = cell[1],
-                    numProtein  = cell[2],
-                    min_len     = cell[3],
-                    max_len     = cell[4],
-                    reprProtein = cell[5]
-                )
-                info.append(q)
-                count += 1
-                if count > 100000:
-                    all += count
-                    print("now:", all, "add:", count)
-                    RepeatDomain.objects.bulk_create(info)
-                    count = 0
-                    info = []
-        if count > 0:
-            RepeatDomain.objects.bulk_create(info)
-        print(all + count)
-    def RepeatProtein(self, Fi="/home/nbt2/proj/23-NewEditing/repeatProtein/nr/CDD/nr.repeat-200_2k.0.5.fa_cluster.tsv"):
-        from protein.models import RepeatProtein
-        RepeatProtein.objects.all().delete()
-        info = []
-        count, all = 0, 0
-        with open(Fi) as f:
-            next(f)
-            for li in f:
-                cell = li.rstrip('\n').split("\t")
-                q = RepeatProtein(
-                   reprProtein = cell[0],
-                   protein = cell[1]
-                )
-                info.append(q)
-                count += 1
-                if count > 100000:
-                    all += count
-                    print("now:", all, "add:", count)
-                    RepeatProtein.objects.bulk_create(info)
-                    count = 0
-                    info = []
-        if count > 0:
-            RepeatProtein.objects.bulk_create(info)
         print(all + count)
 
 

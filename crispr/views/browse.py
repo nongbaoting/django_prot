@@ -10,10 +10,10 @@ import re
 from django.forms.models import model_to_dict
 
 candidateFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/candidate.txt"
-candidates = [i for i in open(candidateFi).read().strip(
-    '\n').split('\n') if not re.match("#", i)]
+# candidates = [i for i in open(candidateFi).read().strip(
+#     '\n').split('\n') if not re.match("#", i)]
 
-
+candidates=[]
 def browse(request):
     data = {"hello": "world"}
     obj = CASInfo.objects.all()
@@ -205,7 +205,8 @@ def alignFatcatScore(request):
 
 ########### functions #########
 infoFi = "/dat1/nbt2/proj/22-cas/work/cas9/known_cas9.txt"
-info = open(infoFi).read().strip('\n').split('\n')
+# info = open(infoFi).read().strip('\n').split('\n')
+info = []
 cas9Info = defaultdict(list)
 for li in info:
     cell = li.split("\t")
@@ -222,8 +223,8 @@ def filter_known_cas(scoreObj):
 
 repeatFi = "/dat1/nbt2/proj/22-cas/work/cas9/findCasCrispr/top100/results/anti_repeat.info"
 repeatDt = defaultdict(list)
-with open(repeatFi) as f:
-    for li in f:
-        cell = li.strip('\n').split("\t")
-        repeatDt[cell[0] ].append  ( cell)
+# with open(repeatFi) as f:
+#     for li in f:
+#         cell = li.strip('\n').split("\t")
+#         repeatDt[cell[0] ].append  ( cell)
 

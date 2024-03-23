@@ -1,4 +1,8 @@
-pdb_annotations_dir = "/dat1/nbt2/proj/21-prot/web/data/res/pdb_annotations/"
+import netifaces 
+pdb_annotations_dir = "/apps/resultData/pdb_annotations/"
+pdb_annotations_dir_remote = "/home/public/nong/pdb_annotations/"
+
+ip=''
 import uuid,time,re,os,json
 from protein.toolkit import *
 from protein.models import *
@@ -7,24 +11,71 @@ from protein import tasks
 reg_zip = re.compile('zip$')
 reg_W = re.compile("\s+")
 reg_cif = re.compile('cif$')
-import shutil
-
 from Bio import PDB
 import numpy as np
-
 from django.http import JsonResponse,FileResponse, Http404
+from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def browse(request):
+    request_type = request.GET.get('request_type')
+    if request_type == "browse":
+        pageSize = int(request.GET.get("pageSize"))
+        currentPage = int(request.GET.get("currentPage"))
+        #uniprot_id = request.GET.get('uniprot_id')
+        info = AF_uniprot.objects.all()
+        totalCount = info.count() 
+        # 分页
+        paginator = Paginator(info, pageSize)
+        print("currentPage, pageSize",currentPage, pageSize)
+        try:
+            dataPage = paginator.page(currentPage)
+        except PageNotAnInteger:
+            dataPage = paginator.page(1)
+        except EmptyPage:
+            dataPage = paginator.page(paginator.num_pages)
+        data  = serializers.serialize('json',dataPage)
+        return JsonResponse({"data":data, "totalCount":totalCount }, safe=False)
+    elif request_type == "search":
+        pageSize = int(request.GET.get("pageSize"))
+        currentPage = int(request.GET.get("currentPage"))
+        #uniprot_id = request.GET.get('uniprot_id')
+        searchType = request.GET.get("searchType")
+        searchContent = request.GET.get('searchContent')
+        filters = searchType + '__icontains'
+        print(searchType, searchContent,filters)
+        if searchType=="gene_names":
+            info = AF_uniprot.objects.filter(gene_names__icontains = searchContent)
+        elif searchType=="protein_names":
+            info = AF_uniprot.objects.filter(protein_names__icontains = searchContent)
+        elif not searchContent:
+            info = AF_uniprot.objects.all()
+        # info = AF_uniprot.objects.filter(**{filters: searchContent})
+        totalCount = info.count()
+        # 分页
+        paginator = Paginator(info, pageSize)
+        print("currentPage, pageSize",currentPage, pageSize)
+        try:
+            dataPage = paginator.page(currentPage)
+        except PageNotAnInteger:
+            dataPage = paginator.page(1)
+        except EmptyPage:
+            dataPage = paginator.page(paginator.num_pages)
+        data  = serializers.serialize('json',dataPage)
+        # data  = serializers.serialize('json',info)
+        return JsonResponse({"data":data, "totalCount":totalCount }, safe=False)
+    
 def uploadPDB_and_annotation(request):
     reg_af = re.compile('AF-')
     if request.method == "POST":
-        
         fileDict = request.FILES.items()
         # 获取上传的文件，如果没有文件，则默认为None
         if not fileDict:
             return JsonResponse({'msg': 'No file upload'})
         the_date = time.strftime("%Y-%m-%d", time.localtime()) 
         myuuid = "file_" + the_date +'_'+ str(uuid.uuid4())
-        tempDir = os.path.join(pdb_annotations_dir, 'uploads',myuuid)
-        os.system('mkdir -p ' + tempDir)
+        uploadDir = os.path.join(pdb_annotations_dir, 'uploads',myuuid)
+        os.system('mkdir -p ' + uploadDir)
         pdbfile= ''
         for (k, v) in fileDict:
             print("dic[%s]=%s" % (k, v))
@@ -33,11 +84,11 @@ def uploadPDB_and_annotation(request):
                 fileName = file._get_name()
 
                 fileName = reg_W.sub('_', fileName)
-                # filePath = os.path.join(tempDir, fileName)
+                # filePath = os.path.join(uploadDir, fileName)
                 # TODO 处理用户上传 chain 选择
-                filePath = os.path.join(tempDir, 'upload.pdb')
+                filePath = os.path.join(uploadDir, 'uploadRaw.pdb')
                 if reg_cif.search(fileName):
-                    filePath = os.path.join(tempDir, 'upload.cif')
+                    filePath = os.path.join(uploadDir, 'uploadRaw.cif')
                 print('filepath = [%s]' % filePath)
                 try:
                     writeFile(filePath, file)
@@ -48,31 +99,56 @@ def uploadPDB_and_annotation(request):
                 if reg_zip.search(fileName):
                     myzipfile = zipfile.ZipFile(filePath)
                     # 解压
-                    myzipfile.extractall(tempDir)
+                    myzipfile.extractall(uploadDir)
         
         
         params ={}
         params['job_name'] = request.POST.get('job_name')
         params['chain'] = request.POST.get('chain')
-        print(tempDir)
+        print(uploadDir)
         params['proj_type'] = "PDB Domain Annotations"
         params['work_dir'] = os.path.join(pdb_annotations_dir, 'results')
+        params['pdb_annotations_dir_remote'] = pdb_annotations_dir_remote
         params['pdbfile'] =  pdbfile
+        params['ip'] = ip
         print(params)
         res = tasks.pdb_domain_annotations.apply_async(args = [params])
+        
         myFunctions.create_submit_form(params, res)
-        return JsonResponse({'msg':200})
+        content = {'msg': 200,
+                   'uuid': res.task_id
+                   
+                   }
+        print(content)
+        return JsonResponse(content)
+
+def check_job(request):
+    uuid = request.GET.get('uuid')
+    content = {
+        'uuid': uuid,
+        'task_status': 'not_exist'
+    }
+    job = SubmitInfoNew.objects.filter(uuid=uuid).first()
+    if job:
+        content['task_status'] = job.task_status
+    return JsonResponse(content)
 
 def parser_results(request):
     result_dir = os.path.join(pdb_annotations_dir, 'results')
     myuuid = request.GET.get('uuid')
     request_type  = request.GET.get('request_type')
     resFi= ''
-    if request_type == "interpro":
+    if request_type == "datainfo":
+        Fi = os.path.join(result_dir, myuuid, "params.json")
+        with open(Fi) as f:
+            params = json.loads(json.load(f))
+            content = {'msg':200, 'chain':params['chain']}
+        return  JsonResponse(content)
+    elif request_type == "interpro":
         resFi = os.path.join(result_dir, myuuid, "interpro.track.json")
         with open(resFi) as f:
             jsonRes = json.loads(json.load(f))
-            return JsonResponse(jsonRes['upload:A'],safe=False)
+            return JsonResponse(jsonRes['upload'],safe=False)
     elif request_type == "unidoc":
         resFi = os.path.join(result_dir, myuuid, "unidoc.track.json")
         with open(resFi) as f:
@@ -145,7 +221,6 @@ def parser_results(request):
                 "totalCount": len(jsonRes)
             }
             return JsonResponse(content,safe=False)
-
     else:
         raise Exception("Unknown")
 
@@ -161,38 +236,87 @@ def get_pdbFile(request):
     else:
         print("File not exist!" + pdb_fi)
         raise Http404("File not exist!" + pdb_fi)
-
-
-
+def get_alignPDBfile(request):
+    pdb_fi = request.GET.get("pdbFile")
+    if os.path.exists(pdb_fi):
+        print(pdb_fi)
+        fh = open(pdb_fi, 'rb')
+        return FileResponse(fh)
+    else:
+        print("File not exist!" + pdb_fi)
+        raise Http404("File not exist!" + pdb_fi)
 
 def align(request):
     annotateDBinfo = {
-        "ECOD": ['/dat1/dat/db/ECOD/F70/data/ecod/domain_data_ln/'],
-        "SCOP": ['/dat1/nbt2/proj/21-prot/dat/pdb/scope_domain'],
-        "pdbDB": ["/dat1/nbt2/proj/21-prot/dat/pdb/mmCIF_ln"],
-        "AFDB": ["/dat1/nbt2/proj/21-prot/dat/alphafold/v2/all/AFDB_all"],
+        "ECOD": ['/apps/data/PDB/ECOD/'],
+        "SCOP": ['/apps/data/PDB/SCOP/'],
+        "pdbDB": ["/apps/data/PDB/pdbDB"],
+        "AFDB": ["/apps/data/PDB/AFDB"],
         "CATH":[]
-    }   
+    }
+    
     myuuid = request.GET.get('uuid')
     db_pdbName =request.GET.get('db_pdbid').split('_MODEL')[0]
     db_name = request.GET.get('db_name')
     chain = request.GET.get('chain')
     work_dir = os.path.join(pdb_annotations_dir, 'results', myuuid)
-    resFi = os.path.join(work_dir, "ecod.json")
+    # resFi = os.path.join(work_dir, "ecod.json")
     print(request)
     db_dir = annotateDBinfo[db_name][0]
     db_pdb = os.path.join(db_dir, db_pdbName)
+    print("db_pdb:", db_pdb)
     if db_name in ['pdbDB']:
         db_pdb = process_dbPDB(work_dir, db_pdb)
+    
     upload_pdb = os.path.join(work_dir, "upload.pdb")
+    # TODO
+    # tmalign = TMalign(work_dir, upload_pdb, db_pdb)
+    # tmalign.run()
+    params = {}
+    params['work_dir'] = work_dir
+    params['upload_pdb'] = upload_pdb
+    params['db_pdb'] = db_pdb
+    
+    res = tasks.Alignment.apply_async(args = [params] )
+    
+    content = {'task_id':res.id}
+    return JsonResponse(content)
+    # print(TMAlign_mergePDB)
+    # fh = open(TMAlign_mergePDB, 'rb')
+    # return FileResponse(fh)
 
-    tmalign = TMalign(work_dir, upload_pdb, db_pdb)
-    tmalign.run()
-    fh = open(tmalign.merged_pdb, 'rb')
-    return FileResponse(fh)
+from celery.result import AsyncResult
+def check_TMalign(request):
+    task_id = request.GET.get('task_id')
+    async_result = AsyncResult(task_id)
+    try:
+        result = async_result.get(timeout=5, propagate=False)
+    except TimeoutError:
+        result = None
+    status = async_result.status
+    traceback = async_result.traceback
+    if isinstance(result, Exception):
+        return JsonResponse({
+            'status': status,
+            'error': str(result),
+            'traceback': traceback,
+        })
+    else:
+        return JsonResponse({
+            'status': status,
+            'result': result,
+        })
 
-
-
+def get_alignPDBfile(request):
+    pdbFile = request.GET.get('pdbFile')
+    if os.path.exists(pdbFile):
+        print(pdbFile)
+        fh = open(pdbFile, 'rb')
+        return FileResponse(fh)
+    else:
+        print("File not exist!" + pdbFile)
+        raise Http404("File not exist!" + pdbFile)
+    
 ################################
 re_sp = re.compile(r'_')
 def process_dbPDB(work_dir, db_pdb):
@@ -210,82 +334,15 @@ def process_dbPDB(work_dir, db_pdb):
         writePrody = prody.writePDB(new_pdb, atoms)
     return new_pdb
 
-
-class TMalign:
-    def __init__(self, work_dir, pdb1, pdb2):
-        self.matrixFi = os.path.join(work_dir, 'matrix')
-        self.work_dir = work_dir
-        self.pdb1 = pdb1 
-        self.pdb2 = pdb2
-       
-        self.merged_pdb = os.path.join(work_dir, 'merged_pdb.pdb')
-        self.matrix = []
-    def clean(self):
-        tmpFiles = [self.matrixFi,self.merged_pdb]
-        for tFi in tmpFiles:
-            if os.path.exists(tFi):
-                os.remove(tFi)
-                
-    def getMatrix(self):
-        re_ma = re.compile(r"m\s+t\[m\]\s+u\[m\]\[0\]")
-        re_sp = re.compile(r"\s+")
-        matrix = []
-        with open(self.matrixFi, 'r') as f:
-            m = 0
-            for li in f:
-                if m == 1:
-                    cell = re_sp.split(li.strip())
-                    self.matrix.append([float(i) for i in cell[1:]])
-                if re_ma.match(li):
-                    m += 1
-                if len(self.matrix) >= 3:
-                    print(self.matrix)
-                    break
-
-    def rotate(self):
-        parser = PDB.PDBParser()
-        self.struct1 = parser.get_structure('uploadPDB', self.pdb1)
-        for model in self.struct1:
-            for chain in model:
-                for residue in chain:
-                    for atom in residue:
-                        x, y, z = atom.coord
-                        X = self.matrix[0][0] + self.matrix[0][1] * x + \
-                            self.matrix[0][2] * y + self.matrix[0][3] * z
-
-                        Y = self.matrix[1][0] + self.matrix[1][1] * x + \
-                            self.matrix[1][2] * y + self.matrix[1][3] * z
-
-                        Z = self.matrix[2][0] + self.matrix[2][1] * x + \
-                            self.matrix[2][2] * y + self.matrix[2][3] * z
-
-                        atom.coord = [X, Y, Z]
-
-
-    def merge2pdb(self,):
-        parser = PDB.PDBParser()
-        # struct1 = parser.get_structure('protein1', pdb1)
-        # Read second PDB file
-        struct2 = parser.get_structure('protein2', self.pdb2)
-        for model in struct2:
-            for chain in model:
-                chain.id = 'B' # Rename chain ID
-                self.struct1[0].add(chain)
-        io = PDB.PDBIO()
-        io.set_structure(self.struct1)
-        io.save(self.merged_pdb)
-
-    def run_cmd(self):
-        cmd = f'cd {self.work_dir}; TMalign {self.pdb1} {self.pdb2} -m {self.matrixFi}'
-        print(cmd)
-        os.system(cmd)
-
-    def run(self,):
-        self.run_cmd()
-        self.getMatrix()
-        self.rotate()
-        self.merge2pdb()
-
+def example_pdb(request):
+    pdbFile = "./protein/static/upload.pdb"
+    if os.path.exists(pdbFile):
+        print(pdbFile)
+        fh = open(pdbFile, 'rb')
+        return FileResponse(fh)
+    else:
+        print("File not exist!" + pdbFile)
+        raise Http404("File not exist!" + pdbFile)
 
 
 def df_to_JSjson(df):

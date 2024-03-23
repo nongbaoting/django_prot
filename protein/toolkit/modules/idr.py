@@ -11,7 +11,7 @@ def flDPnn2protvista(outFi):
     sites,bins,scores = [],[],[]
     with open(outFi,'r') as f:
         for li in f:
-            if re.match('>',li):
+            if re.match('>', li):
                 id = li.strip().split('\s')[0][1:]
                 sites = next(f).strip().split(',')
                 bins = next(f).strip().split(',')
@@ -20,7 +20,7 @@ def flDPnn2protvista(outFi):
     fragments = []
     print(sites)
 
-    start,end=0,0
+    start, end = 0,0
     fragment_score = []
     for index, char in enumerate(bins):
         # print(char)
@@ -35,7 +35,7 @@ def flDPnn2protvista(outFi):
                     "end": end, 
                     "tooltipContent": f"IDR <br>Range: {start} - {end}", 
                     "color": '#BC80BD', 
-                    "score":fragment_score
+                    "score": fragment_score
                     }
             start,end = 0,0
             fragment_score = []
@@ -43,20 +43,21 @@ def flDPnn2protvista(outFi):
     
     fragments_dt = {"fragments":fragments}
     data_subtrack = {
-                        "accession": 'IDR' ,
-                         "type": 'Domain',
-                        "label": "flDPnn",
-                        "labelTooltip":"IDR",
-                        "locations": [{"fragments":fragments}
-                            
+                    "accession": 'IDR' ,
+                    "type": 'Domain',
+                    "label": "flDPnn",
+                    "labelTooltip":"IDR",
+                    "locations": [
+                        {"fragments":fragments}             
                         ]
                     }
+
     track = {
         "label": 'IDR',
         "labelType": 'text',
         "data":[data_subtrack]
-
     }
+
     return track
 
 
@@ -70,13 +71,13 @@ class flDPnn:
         subprocess.run('mkdir -p ' + self.outDir, stdout=subprocess.PIPE, shell=True)
         self.init_cmd = f'cd {self.outDir}; ' 
         self.res = []
+        
     def run(self):
         pdb2fasta(self.pdbFile, self.FaFi)
-        cmd = self.init_cmd
-        cmd += f"docker run -i sinaghadermarzi/fldpnn fldpnn/dockerinout < {self.FaFi} > fldpnn_results.tar.gz; tar -xvf fldpnn_results.tar.gz"
-        print(cmd)
+        cmd = f"cd {self.outDir}; conda run -n flDPnn python /apps_dk/fldpnn-master/run_flDPnn.py {self.FaFi}"
         # subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
         self.parse()
+        
     def parse(self):
         self.res =  flDPnn2protvista(self.outFi)
     

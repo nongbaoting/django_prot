@@ -26,6 +26,9 @@ colorSet3D = [
     '#66A61E',
     '#E6AB02',
     '#A6761D',
+    "#666666", "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", 
+"#a65628", "#f781bf", "#999999", "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3",
+ "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"
 ]
 
 def scanAndFind_pattern(mydir, mypattern):
@@ -99,7 +102,7 @@ class Unidoc:
         sep_reg = re.compile(f".pdb|.cif")
         fileName = os.path.basename(self.pdbfile)
         entry_id = sep_reg.split(fileName)[0]
-        seq_id = fileName.split('.')[0] + f':{self.chain}'
+        seq_id = list(self.fasta.keys())[0]
         seq  = str(self.fasta[seq_id].seq)
         domains = open(self.unidoc_out).read().strip().split(',')
         rowConfigData = [
@@ -135,7 +138,7 @@ class Unidoc:
         sep_reg = re.compile(f".pdb|.cif")
         fileName = os.path.basename(self.pdbfile)
         entry_id = sep_reg.split(fileName)[0]
-        seq_id = fileName.split('.')[0] + f':{self.chain}'
+        seq_id = list(self.fasta.keys())[0]
         seq  = str(self.fasta[seq_id].seq)
         domains = open(self.unidoc_out).read().strip().split(',')
         
@@ -178,11 +181,11 @@ class Unidoc:
         self.fasta = SeqIO.to_dict(SeqIO.parse(self.FaFi, 'fasta'))
 
     def run(self):
-        cmd1 = f'python /dat1/apps/structure/UniDoc/Run_UniDoc_from_scratch_structure.py -i {self.pdbfile}  -c {self.chain} -o {self.unidoc_out}'
-        cmd2 = f'pdb2fasta {self.pdbfile} > {self.FaFi}'
-        print(cmd1)
+        cmd1 = f'python /apps_dk/UniDoc/Run_UniDoc_from_scratch_structure.py -i {self.pdbfile}  -c {self.chain} -o {self.unidoc_out}'
+        # cmd2 = f'pdb2fasta {self.pdbfile} > {self.FaFi}'
+        # print(cmd1)
         subprocess.run(cmd1, stdout=subprocess.PIPE, shell=True)
-        subprocess.run(cmd2, stdout=subprocess.PIPE, shell=True)
+        # subprocess.run(cmd2, stdout=subprocess.PIPE, shell=True)
          
 def run_unidoc(pdbfile, chain, work_dir):
     unidoc = Unidoc(pdbfile,chain,work_dir)

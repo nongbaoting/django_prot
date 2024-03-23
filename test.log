@@ -1,0 +1,81 @@
+22/03/2024 08:12:34:088 Welcome to InterProScan-5.60-92.0
+22/03/2024 08:12:34:090 Running InterProScan v5 in STANDALONE mode... on Linux
+22/03/2024 08:12:38:883 RunID: 76d98c32b113_20240322_081238754_gyfl
+22/03/2024 08:13:07:585 Loading file /apps/resultData/pdb_annotations/results/138bc575-c732-4a42-9883-6d3381cb28e1/seqs.fasta
+22/03/2024 08:13:07:587 Running the following analyses:
+[AntiFam-7.0,CDD-3.20,Coils-2.2.1,FunFam-4.3.0,Gene3D-4.3.0,Hamap-2021_04,MobiDBLite-2.0,PANTHER-17.0,Pfam-35.0,PIRSF-3.10,PIRSR-2021_05,PRINTS-42.0,ProSitePatterns-2022_01,ProSiteProfiles-2022_01,SFLD-4,SMART-7.1,SUPERFAMILY-1.75,TIGRFAM-15.0]
+Pre-calculated match lookup service DISABLED.  Please wait for match calculations to complete...
+22/03/2024 08:13:46:208 25% completed
+22/03/2024 08:14:20:735 50% completed
+22/03/2024 08:14:32:457 75% completed
+22/03/2024 08:14:41:410 90% completed
+22/03/2024 08:14:51:040 100% done:  InterProScan analyses completed 
+
+cp: '/apps/resultData/pdb_annotations/results/138bc575-c732-4a42-9883-6d3381cb28e1/upload.pdb' and '/apps/resultData/pdb_annotations/results/138bc575-c732-4a42-9883-6d3381cb28e1/upload.pdb' are the same file
+/root/miniconda3/envs/sword2/lib/python3.8/site-packages/Bio/SubsMat/__init__.py:126: BiopythonDeprecationWarning: Bio.SubsMat has been deprecated, and we intend to remove it in a future release of Biopython. As an alternative, please consider using Bio.Align.substitution_matrices as a replacement, and contact the Biopython developers if you still need the Bio.SubsMat module.
+  warnings.warn(
+2024/03/22 08:14:56 WARNING  Results dir 'result/upload_A' already exists. We created 'result/upload_A_22_03_2024_52422' instead.
+2024/03/22 08:14:56 INFO     Try to parse user input structure file
+2024/03/22 08:14:56 DEBUG    27026 atoms and 1 coordinate set(s) were parsed in 0.19s.
+2024/03/22 08:14:56 INFO     
+2024/03/22 08:14:56 INFO     >>>   Estimated runtime: 71 minutes
+2024/03/22 08:14:56 INFO     >>>   Using 8 cpus
+2024/03/22 08:14:56 INFO     
+2024/03/22 08:14:56 INFO     Write a clean version of the PDB: remove non standard residues
+2024/03/22 08:14:57 INFO     Launch SWORD
+2024/03/22 09:24:07 INFO     Parse SWORD output
+2024/03/22 09:24:07 INFO     Calculate pseudo-energies of Domains
+2024/03/22 09:24:07 INFO     Write the SWORD results
+Traceback (most recent call last):
+  File "/apps_dk/SWORD2/SWORD2.py", line 718, in <module>
+    write_peeling_results()
+  File "/apps_dk/SWORD2/SWORD2.py", line 437, in write_peeling_results
+    with open(peeling_num, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'result/upload_A_22_03_2024_52422/PDBs_Clean/upload_A/upload_A.num'
+
+ERROR conda.cli.main_run:execute(124): `conda run /apps_dk/SWORD2/SWORD2.py -i /apps/resultData/pdb_annotations/results/138bc575-c732-4a42-9883-6d3381cb28e1/upload.pdb -o result -c A -x 8` failed. (See above for error)
+{'job_name': 'cas12i6-fusion2', 'chain': 'A', 'proj_type': 'PDB Domain Annotations', 'work_dir': '/apps/resultData/pdb_annotations/results', 'pdb_annotations_dir_remote': '/home/public/nong/pdb_annotations/', 'pdbfile': '/apps/resultData/pdb_annotations/uploads/file_2024-03-22_b705e5da-b6dc-46b5-8bea-a3f512b2392a/uploadRaw.cif', 'ip': '', 'uuid': '138bc575-c732-4a42-9883-6d3381cb28e1'}
+GENE3D
+PRINTS
+SUPERFAMILY
+MOBIDB_LITE
+GENE3D
+PANTHER
+FUNFAM
+PFAM
+MOBIDB_LITE
+MOBIDB_LITE
+SMART
+CDD
+FUNFAM
+CDD
+GENE3D
+MOBIDB_LITE
+SMART
+SUPERFAMILY
+HAMAP
+PFAM
+PFAM
+MOBIDB_LITE
+GENE3D
+SUPERFAMILY
+Traceback (most recent call last):
+  File "./test.py", line 51, in <module>
+    fire.Fire(Main)
+  File "/root/miniconda3/envs/webProt/lib/python3.8/site-packages/fire/core.py", line 141, in Fire
+    component_trace = _Fire(component, args, parsed_flag_args, context, name)
+  File "/root/miniconda3/envs/webProt/lib/python3.8/site-packages/fire/core.py", line 466, in _Fire
+    component, remaining_args = _CallAndUpdateTrace(
+  File "/root/miniconda3/envs/webProt/lib/python3.8/site-packages/fire/core.py", line 681, in _CallAndUpdateTrace
+    component = fn(*varargs, **kwargs)
+  File "./test.py", line 29, in test1
+    results = run_pdb_domain_annotations.domain_annotations( params )
+  File "/apps/django_prot/protein/toolkit/run_pdb_domain_annotations.py", line 57, in domain_annotations
+    sword2_track,sequence = sword2.run_sword2(pdbfile, chain, work_dir)
+  File "/apps/django_prot/protein/toolkit/modules/sword2.py", line 213, in run_sword2
+    sword2_track = sword2.scandir(work_dir,outFi,outFiProtvista)
+  File "/apps/django_prot/protein/toolkit/modules/sword2.py", line 118, in scandir
+    data = self.parse(entry.path, seq_id)
+  File "/apps/django_prot/protein/toolkit/modules/sword2.py", line 161, in parse
+    return data
+UnboundLocalError: local variable 'data' referenced before assignment

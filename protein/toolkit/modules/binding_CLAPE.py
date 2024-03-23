@@ -1,4 +1,5 @@
-import os,subprocess, fire
+import os, subprocess, fire
+
 
 def parse2protvista(outFi,label):
     fragments = []
@@ -12,7 +13,7 @@ def parse2protvista(outFi,label):
                 "start": index + 1,
                 "end": index + 1, 
                 "tooltipContent": f"Position: {index}, Seq: {seqs[index]}", 
-                "color": '#DC143C'
+                "color": '#DC143C' 
             }
             fragments.append(fragment_)
     
@@ -36,7 +37,7 @@ def parse2protvista(outFi,label):
 
 class CLAPE:
     def __init__(self,pdbFile, root_dir):
-        self.init_cmd = 'ssh -p3389 nong@172.22.148.150 "source ~/.zshrc;'
+        self.init_cmd = ''
         self.root_dir = os.path.abspath(root_dir)
         self.pdbFile = os.path.abspath( pdbFile)
         self.name = os.path.basename(pdbFile).split('.')[0]
@@ -48,10 +49,10 @@ class CLAPE:
     def run_clape(self):
         self.pdb2fasta()
         cmd = self.init_cmd
-        cmd += f"conda run -n  CLAPE python /dat1/apps/CLAPE/clape.py  --ligand DNA --input {self.FaFi} --output {self.out_dna};"
-        cmd += f"conda run -n CLAPE python /dat1/apps/CLAPE/clape.py  --ligand RNA --input {self.FaFi} --output {self.out_rna};"
-        cmd += f"conda run -n CLAPE python /dat1/apps/CLAPE/clape.py  --ligand AB  --input {self.FaFi} --output {self.out_ab}"
-        cmd += '"'
+        cmd += f"conda run -n CLAPE python /apps_dk/CLAPE/clape.py  --ligand DNA --input {self.FaFi} --output {self.out_dna};"
+        cmd += f"conda run -n CLAPE python /apps_dk/CLAPE/clape.py  --ligand RNA --input {self.FaFi} --output {self.out_rna};"
+        cmd += f"conda run -n CLAPE python /apps_dk/CLAPE/clape.py  --ligand AB  --input {self.FaFi} --output {self.out_ab}"
+       
         print(cmd)
         subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
         return self.parse_clape() 
